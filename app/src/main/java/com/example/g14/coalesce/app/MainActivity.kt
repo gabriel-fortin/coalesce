@@ -1,4 +1,4 @@
-package com.example.g14.coalesce
+package com.example.g14.coalesce.app
 
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar

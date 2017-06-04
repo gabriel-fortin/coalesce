@@ -1,7 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.1.2-4'
+    ext {
+        kotlin_version = '1.1.2-4'
+    }
     repositories {
         maven { url 'https://maven.google.com' }
         jcenter()
@@ -14,6 +16,7 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+apply plugin: 'kotlin'
 
 allprojects {
     repositories {
@@ -23,6 +26,15 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+// Commented out because: Declaring custom 'clean' task when using the standard
+//                        Gradle lifecycle plugins is not allowed.
+//task clean(type: Delete) {
+//    delete rootProject.buildDir
+//}
+
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 }

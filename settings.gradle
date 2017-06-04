@@ -1,1 +1,4 @@
 include ':app'
+include ':presenter'
+include ':useCase'
+include ':entity'
