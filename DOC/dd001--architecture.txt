@@ -1,0 +1,11 @@
+design decisions -- 001: overall architecture
+
+An architecture enforcing encapsulation and separation of concerns is needed.
+
+The app will be divided in a few modules which will enforce that dependencies
+ are going only to lower layers. Modules:
+     - entity -- only POJOs defining the model
+     - use case -- defines the repository interface and actions on the model
+     - presenter -- defines interactions with the user (in a UI agnostic way), views' interfaces
+     - app -- views, repository, networking, DI, persistence
+
