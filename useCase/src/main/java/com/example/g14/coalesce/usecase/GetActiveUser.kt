@@ -15,6 +15,6 @@ class GetActiveUser: UseCase<ActiveUserResult>() {
 }
 
 sealed class ActiveUserResult(): UseCaseResult() {
-    class NoUser: ActiveUserResult()
-    class UserResult(val user: User): ActiveUserResult()
+    class NoUser : ActiveUserResult()
+    class LoggedIn(val user: User): ActiveUserResult()
 }

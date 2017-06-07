@@ -4,8 +4,7 @@ package com.example.g14.coalesce.entity
  * Created by Gabriel Fortin
  */
 
-data class User(
+data class Group(
         val id: IdType,
-        val name: String,
-        val avatar: ImageIdType
+        val members: List<User>
 )
