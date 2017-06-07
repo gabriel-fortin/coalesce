@@ -5,7 +5,7 @@ package com.example.g14.coalesce.entity
  */
 
 data class Messsage(
-        val id: Int,
+        val id: IdType,
         val text: String,
         val timestamp: Long,
         val sender: User,
