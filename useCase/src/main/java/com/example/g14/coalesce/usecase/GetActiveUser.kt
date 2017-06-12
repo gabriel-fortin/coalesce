@@ -1,20 +1,21 @@
 package com.example.g14.coalesce.usecase
 
 import com.example.g14.coalesce.entity.User
+import io.reactivex.Observable
 
 /**
  * Created by Gabriel Fortin
  */
 
-class GetActiveUser: UseCase<ActiveUserResult>() {
+interface GetActiveUser: ObservableUseCase<ActiveUserResult>{
 
-    override fun execute(): ActiveUserResult {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun execute(): Observable<ActiveUserResult> {
+        TODO("not implemented")
     }
 
 }
 
-sealed class ActiveUserResult(): UseCaseResult() {
+sealed class ActiveUserResult() {
     class NoUser : ActiveUserResult()
     class LoggedIn(val user: User): ActiveUserResult()
 }

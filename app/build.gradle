@@ -35,4 +35,8 @@ dependencies {
     implementation project(':entity')
     implementation project(':useCase')
     implementation project(':presenter')
+
+
+    implementation "io.reactivex.rxjava2:rxjava:$rxjava2_version"
+    implementation "io.reactivex.rxjava2:rxkotlin:$rxjava2_rxkotlin_version"
 }

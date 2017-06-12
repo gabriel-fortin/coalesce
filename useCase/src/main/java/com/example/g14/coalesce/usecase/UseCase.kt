@@ -1,17 +1,14 @@
 package com.example.g14.coalesce.usecase
 
+import io.reactivex.Observable
+
 /**
  * Created by Gabriel Fortin
  */
 
-// TODO: wrap result of 'execute' in RxJava's 'Flowable'
-
-abstract class UseCase<out TResult: UseCaseResult> {
-
-    /** Should only be called by an Executor */
-    abstract fun execute(): TResult
-
+interface UseCase<out TResult> {
+    fun execute() : TResult
 }
 
-abstract class UseCaseResult
-
+/** Convenience type to flatten nested generic args */
+interface ObservableUseCase<TResult> : UseCase<Observable<TResult>> {}

@@ -22,4 +22,7 @@ dependencies {
 
     // Become aware of the lower layer (in architectural sense)
     compileOnly project(':entity')
+
+    compileOnly "io.reactivex.rxjava2:rxjava:$rxjava2_version"
+    compileOnly "io.reactivex.rxjava2:rxkotlin:$rxjava2_rxkotlin_version"
 }
