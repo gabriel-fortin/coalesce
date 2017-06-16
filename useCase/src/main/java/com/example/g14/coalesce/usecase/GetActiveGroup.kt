@@ -1,10 +1,7 @@
 package com.example.g14.coalesce.usecase
 
 import com.example.g14.coalesce.entity.Group
-import com.example.g14.coalesce.entity.IdType
-import io.reactivex.Notification
 import io.reactivex.Observable
-import io.reactivex.ObservableTransformer
 
 /**
  * Created by Gabriel Fortin
@@ -25,10 +22,11 @@ class GetTheOnlyActiveGroup(val repo: Repository) : GetActiveGroup {
     override fun execute(): Observable<ActiveGroupResult> =
         repo
         .getCurrentUserId()
-        .magicallyHideNull()
+        .whenNullThen(NoGroup()) { whenNotNull ->
+            whenNotNull
             .flatMap(repo::getGroupsFor)
             .map(this::selectActiveGroup)
-        .magicallyReplaceHiddenNullWith(NoGroup())
+        }
 
     protected fun selectActiveGroup(listOfGroups: List<Group>): ActiveGroupResult {
         if (listOfGroups.size == 0) return NoGroup()
