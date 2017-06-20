@@ -25,4 +25,11 @@ dependencies {
 
     compileOnly "io.reactivex.rxjava2:rxjava:$rxjava2_version"
     compileOnly "io.reactivex.rxjava2:rxkotlin:$rxjava2_rxkotlin_version"
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.+'
+    testImplementation project(':entity')
+    testImplementation "io.reactivex.rxjava2:rxjava:$rxjava2_version"
+    testImplementation "io.reactivex.rxjava2:rxkotlin:$rxjava2_rxkotlin_version"
+
 }

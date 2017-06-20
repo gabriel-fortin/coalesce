@@ -20,9 +20,11 @@ class GetActiveUser(val repo: Repository): ObservableUseCase<ActiveUserResult> {
     override fun execute(): Observable<ActiveUserResult> =
             repo
             .getCurrentUserId()
-            .whenNullThen(NoUser()) { whenNotNull ->
-                whenNotNull
-                .flatMap { repo.getUserBy(it).toObservable() }
-                .map<ActiveUserResult> { user -> Success(user) }
+            .switchMap {
+                if (it == null) Observable.just(NoUser())
+                else repo
+                        .getUserBy(it)
+                        .toObservable()
+                        .map { user -> Success(user) }
             }
 }
