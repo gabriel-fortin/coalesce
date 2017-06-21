@@ -31,7 +31,7 @@ class GetActiveUserTest {
         `when`(repoMock.getUserBy(103)).thenReturn(user103Stream.firstOrError())
 
         // "repo.getCurrentUserId()"
-        val repoCurrentUserIdStream = BehaviorSubject.create<Int>()
+        val repoCurrentUserIdStream = BehaviorSubject.create<Optional<Int>>()
         `when`(repoMock.getCurrentUserId()).thenReturn(repoCurrentUserIdStream)
 
         val u1 = makeUser(101)
@@ -41,14 +41,14 @@ class GetActiveUserTest {
         // EXECUTE
         val testObserver = GetActiveUser(repoMock).execute().test()
 
-        repoCurrentUserIdStream.onNext(101)
+        repoCurrentUserIdStream.onNext(Optional.of(101))
         // next user id appears before a 'User' object was returned for the previous
-        repoCurrentUserIdStream.onNext(102)
+        repoCurrentUserIdStream.onNext(Optional.of(102))
         // 'u1' object should be ignored by the use case as it is provided too late
         user101Stream.onNext(u1)
         user102Stream.onNext(u2)
         // the last one comes normally
-        repoCurrentUserIdStream.onNext(103)
+        repoCurrentUserIdStream.onNext(Optional.of(103))
         user103Stream.onNext(u3)
 
         // VERIFY
@@ -72,7 +72,7 @@ class GetActiveUserTest {
         `when`(repoMock.getUserBy(101)).thenReturn(user101Stream.firstOrError())
 
         // "repo.getCurrentUserId()"
-        val repoCurrentUserIdStream = BehaviorSubject.create<Int>()
+        val repoCurrentUserIdStream = BehaviorSubject.create<Optional<Int>>()
         `when`(repoMock.getCurrentUserId()).thenReturn(repoCurrentUserIdStream)
 
         val u1 = makeUser(101)
@@ -80,9 +80,10 @@ class GetActiveUserTest {
         // EXECUTE
         val testObserver = GetActiveUser(repoMock).execute().test()
 
-        repoCurrentUserIdStream.onNext(null)
-        repoCurrentUserIdStream.onNext(101)
-        repoCurrentUserIdStream.onNext(null)
+        repoCurrentUserIdStream.onNext(Optional.empty())
+        repoCurrentUserIdStream.onNext(Optional.of(101))
+        user101Stream.onNext(u1)
+        repoCurrentUserIdStream.onNext(Optional.empty())
 
         // VERIFY
         testObserver.assertValueCount(3)

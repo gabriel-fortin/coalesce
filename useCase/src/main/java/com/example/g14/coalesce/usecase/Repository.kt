@@ -18,7 +18,7 @@ import io.reactivex.Single
  * e.g. by using .startWith()
  */
 interface Repository {
-    fun getCurrentUserId(): Observable<IdType?>
+    fun getCurrentUserId(): Observable<Optional<IdType>>
     fun setCurrentUserId(id: IdType): Completable
 
     fun getUserBy(userId: IdType): Single<User>

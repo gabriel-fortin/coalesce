@@ -1,8 +1,10 @@
 package com.example.g14.coalesce.usecase
 
+import com.example.g14.coalesce.entity.IdType
 import com.example.g14.coalesce.entity.User
 import com.example.g14.coalesce.usecase.ActiveUserResult.*;
 import io.reactivex.Observable
+import io.reactivex.Single
 
 /**
  * Created by Gabriel Fortin
@@ -20,11 +22,17 @@ class GetActiveUser(val repo: Repository): ObservableUseCase<ActiveUserResult> {
     override fun execute(): Observable<ActiveUserResult> =
             repo
             .getCurrentUserId()
-            .switchMap {
-                if (it == null) Observable.just(NoUser())
-                else repo
-                        .getUserBy(it)
-                        .toObservable()
-                        .map { user -> Success(user) }
+            .switchMap { optionalId ->
+                optionalId
+                .defaultValueOrMapper(
+                        valueIfEmpty = Single.just(NoUser()),
+                        mapper = this::mapUserIdToActiveUserResult
+                )
+                .toObservable()
             }
+
+    private fun mapUserIdToActiveUserResult(userId: IdType): Single<Success> =
+            repo
+            .getUserBy(userId)
+            .map { user -> Success(user) }
 }
