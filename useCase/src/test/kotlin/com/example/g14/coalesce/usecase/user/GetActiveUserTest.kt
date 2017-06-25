@@ -1,6 +1,8 @@
-package com.example.g14.coalesce.usecase
+package com.example.g14.coalesce.usecase.user
 
 import com.example.g14.coalesce.entity.User
+import com.example.g14.coalesce.usecase.Optional
+import com.example.g14.coalesce.usecase.Repository
 import io.reactivex.subjects.BehaviorSubject
 import org.junit.Before
 import org.junit.Test
@@ -39,7 +41,7 @@ class GetActiveUserTest {
         val u3 = makeUser(103)
 
         // EXECUTE
-        val testObserver = GetActiveUser(repoMock).execute().test()
+        val testObserver = GetActiveUserImpl(repoMock).execute().test()
 
         repoCurrentUserIdStream.onNext(Optional.of(101))
         // next user id appears before a 'User' object was returned for the previous
@@ -78,7 +80,7 @@ class GetActiveUserTest {
         val u1 = makeUser(101)
 
         // EXECUTE
-        val testObserver = GetActiveUser(repoMock).execute().test()
+        val testObserver = GetActiveUserImpl(repoMock).execute().test()
 
         repoCurrentUserIdStream.onNext(Optional.empty())
         repoCurrentUserIdStream.onNext(Optional.of(101))

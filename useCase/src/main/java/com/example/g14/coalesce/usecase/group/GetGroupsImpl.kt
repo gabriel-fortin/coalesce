@@ -1,23 +1,14 @@
-package com.example.g14.coalesce.usecase
+package com.example.g14.coalesce.usecase.group
 
-import com.example.g14.coalesce.entity.Group
-import com.example.g14.coalesce.usecase.GroupsResult.NoGroups
+import com.example.g14.coalesce.usecase.NoData
+import com.example.g14.coalesce.usecase.Repository
+import com.example.g14.coalesce.usecase.user.ActiveUserResult
+import com.example.g14.coalesce.usecase.user.GetActiveUser
 import io.reactivex.Observable
 
 /**
  * Created by Gabriel Fortin
  */
-
-sealed class GroupsResult {
-    data class Success(val groups: List<Group>) : GroupsResult()
-    data class NoGroups(val reason: NoData? = null) : NoData, GroupsResult() {
-        override fun reason(): NoData? = reason
-    }
-}
-
-interface GetGroups : ObservableUseCase<GroupsResult> {
-    override fun execute(): Observable<GroupsResult>
-}
 
 class GetGroupsImpl(
         val repo: Repository,
@@ -34,7 +25,7 @@ class GetGroupsImpl(
         val failure: Observable<GroupsResult> =
                 activeUserRes
                 .ofType(NoData::class.java)
-                .map(::NoGroups)
+                .map(GroupsResult::NoGroups)
         return Observable.merge(success, failure)
     }
 }
