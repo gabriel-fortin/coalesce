@@ -10,7 +10,6 @@ import io.reactivex.Observable
 
 /** This implementation assumes a user can belong to only one group */
 class GetTheOnlyActiveGroup(
-        val repo: Repository,
         val groupsUseCase: GetGroups
 ) : GetActiveGroup {
 
