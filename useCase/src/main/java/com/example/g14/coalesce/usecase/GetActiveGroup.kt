@@ -9,15 +9,17 @@ import io.reactivex.Observable
  */
 
 sealed class ActiveGroupResult {
-    class Success(val group: Group) : ActiveGroupResult()
-    class NoGroup(val reason: NoData? = null) : NoData, ActiveGroupResult() {
+    data class Success(val group: Group) : ActiveGroupResult()
+    data class NoGroup(val reason: NoData? = null) : NoData, ActiveGroupResult() {
         override fun reason(): NoData? = reason
     }
 }
 
 /** Depending on whether a user can belong to only one group or more
 the implementation will vary */
-interface GetActiveGroup : ObservableUseCase<ActiveGroupResult>
+interface GetActiveGroup : ObservableUseCase<ActiveGroupResult> {
+    override fun execute(): Observable<ActiveGroupResult>
+}
 
 
 /** This implementation assumes a user can belong to only one group */

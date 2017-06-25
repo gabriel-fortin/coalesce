@@ -9,16 +9,20 @@ import io.reactivex.Observable
  */
 
 sealed class GroupsResult {
-    class Success(val groups: List<Group>) : GroupsResult()
-    class NoGroups(val reason: NoData? = null) : NoData, GroupsResult() {
+    data class Success(val groups: List<Group>) : GroupsResult()
+    data class NoGroups(val reason: NoData? = null) : NoData, GroupsResult() {
         override fun reason(): NoData? = reason
     }
 }
 
-class GetGroups(
+interface GetGroups : ObservableUseCase<GroupsResult> {
+    override fun execute(): Observable<GroupsResult>
+}
+
+class GetGroupsImpl(
         val repo: Repository,
         val activeUserUseCase: GetActiveUser
-): ObservableUseCase<GroupsResult> {
+): GetGroups {
 
     override fun execute(): Observable<GroupsResult> {
         val activeUserRes = activeUserUseCase.execute()

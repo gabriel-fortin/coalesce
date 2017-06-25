@@ -11,13 +11,17 @@ import io.reactivex.Single
  */
 
 sealed class ActiveUserResult {
-    class Success(val user: User): ActiveUserResult()
-    class NoUser(val reason: NoData? = null) : NoData, ActiveUserResult() {
+    data class Success(val user: User): ActiveUserResult()
+    data class NoUser(val reason: NoData? = null) : NoData, ActiveUserResult() {
         override fun reason(): NoData? = reason
     }
 }
 
-class GetActiveUser(val repo: Repository): ObservableUseCase<ActiveUserResult> {
+interface GetActiveUser : ObservableUseCase<ActiveUserResult> {
+    override fun execute(): Observable<ActiveUserResult>
+}
+
+class GetActiveUserImpl(val repo: Repository): ObservableUseCase<ActiveUserResult> {
 
     override fun execute(): Observable<ActiveUserResult> =
             repo
