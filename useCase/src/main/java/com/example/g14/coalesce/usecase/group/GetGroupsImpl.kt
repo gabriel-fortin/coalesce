@@ -1,8 +1,9 @@
 package com.example.g14.coalesce.usecase.group
 
-import com.example.g14.coalesce.usecase.NoData
 import com.example.g14.coalesce.usecase.Repository
 import com.example.g14.coalesce.usecase.user.ActiveUserResult
+import com.example.g14.coalesce.usecase.user.ActiveUserResult.NoUser
+import com.example.g14.coalesce.usecase.group.GroupsResult.NoGroups
 import com.example.g14.coalesce.usecase.user.GetActiveUser
 import io.reactivex.Observable
 
@@ -15,17 +16,19 @@ class GetGroupsImpl(
         val activeUserUseCase: GetActiveUser
 ): GetGroups {
 
-    override fun execute(): Observable<GroupsResult> {
-        val activeUserRes = activeUserUseCase.execute()
-        val success: Observable<GroupsResult> =
-                activeUserRes
-                .ofType(ActiveUserResult.Success::class.java)
-                .flatMap { repo.getGroupsFor(it.user.id) }
-                .map { GroupsResult.Success(it.toSet()) }
-        val failure: Observable<GroupsResult> =
-                activeUserRes
-                .ofType(NoData::class.java)
-                .map(GroupsResult::NoGroups)
-        return Observable.merge(success, failure)
-    }
+    override fun execute(): Observable<GroupsResult> =
+            activeUserUseCase
+            .execute()
+            .switchMap<GroupsResult> { when (it) {
+                is NoUser -> Observable.just(NoGroups(it))
+                is ActiveUserResult.Success ->
+                        repo
+                        .getGroupsFor(it.user.id)
+                        .map {
+                            if (it.isEmpty()) NoGroups()
+                            else GroupsResult.Success(it.toSet())
+                        }
+                }
+            }
+
 }
