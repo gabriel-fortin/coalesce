@@ -8,7 +8,7 @@ import com.example.g14.coalesce.usecase.NoData
  */
 
 sealed class GroupsResult {
-    data class Success(val groups: List<Group>) : GroupsResult()
+    data class Success(val groups: Set<Group>) : GroupsResult()
     data class NoGroups(val reason: NoData? = null) : NoData, GroupsResult() {
         override fun reason(): NoData? = reason
     }

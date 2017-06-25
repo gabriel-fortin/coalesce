@@ -25,9 +25,9 @@ class GetTheOnlyActiveGroup(
         return Observable.merge(success, failure)
     }
 
-    protected fun selectActiveGroup(listOfGroups: List<Group>): ActiveGroupResult {
-        if (listOfGroups.size == 0) return ActiveGroupResult.NoGroup()
-        if (listOfGroups.size == 1) return ActiveGroupResult.Success(listOfGroups[0])
+    protected fun selectActiveGroup(setOfGroups: Set<Group>): ActiveGroupResult {
+        if (setOfGroups.size == 0) return ActiveGroupResult.NoGroup()
+        if (setOfGroups.size == 1) return ActiveGroupResult.Success(setOfGroups.first())
 
         val msg = "cannot select active group; not implemented for >1 groupsUseCase"
         throw UnsupportedOperationException(msg)

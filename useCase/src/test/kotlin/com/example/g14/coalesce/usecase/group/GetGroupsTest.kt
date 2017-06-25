@@ -92,11 +92,11 @@ class GetGroupsTest {
 
         // VERIFY
         testObserver.assertValues(
-                GroupsResult.Success(listOf(makeGroup(51, u1))),
-                GroupsResult.Success(listOf(makeGroup(52, u2, u99))),
+                GroupsResult.Success(setOf(makeGroup(51, u1))),
+                GroupsResult.Success(setOf(makeGroup(52, u2, u99))),
                 // here, we compare to an equal element 'u3_bis'
-                GroupsResult.Success(listOf(makeGroup(53, u3_bis))),
-                GroupsResult.Success(listOf(makeGroup(54, u4, u99)))
+                GroupsResult.Success(setOf(makeGroup(53, u3_bis))),
+                GroupsResult.Success(setOf(makeGroup(54, u4, u99)))
         )
         testObserver.assertNotTerminated()
 
@@ -123,7 +123,7 @@ class GetGroupsTest {
         // VERIFY
         testObserver.assertValues(
                 GroupsResult.NoGroups(null),
-                GroupsResult.Success(listOf(makeGroup(52, u2, u3)))
+                GroupsResult.Success(setOf(makeGroup(52, u2, u3)))
         )
         testObserver.assertNotTerminated()
 
@@ -153,9 +153,9 @@ class GetGroupsTest {
 
         // VERIFY
         testObserver.assertValues(
-                GroupsResult.Success(listOf(makeGroup(51, u1))),
-                GroupsResult.Success(listOf(makeGroup(53, u2, u99, u3))),
-                GroupsResult.Success(listOf(makeGroup(54, u4)))
+                GroupsResult.Success(setOf(makeGroup(51, u1))),
+                GroupsResult.Success(setOf(makeGroup(53, u2, u99, u3))),
+                GroupsResult.Success(setOf(makeGroup(54, u4)))
         )
         testObserver.assertNotTerminated()
 
@@ -184,10 +184,10 @@ class GetGroupsTest {
 
         // VERIFY
         testObserver.assertValues(
-                GroupsResult.Success(listOf(
+                GroupsResult.Success(setOf(
                         makeGroup(61, u1, u99),
                         makeGroup(51, u1, u2))),
-                GroupsResult.Success(listOf(makeGroup(53, u3)))
+                GroupsResult.Success(setOf(makeGroup(53, u3)))
         )
         testObserver.assertNotTerminated()
 
@@ -219,9 +219,9 @@ class GetGroupsTest {
 
         // VERIFY
         testObserver.assertValues(
-                GroupsResult.Success(listOf(makeGroup(51, u1, u3))),
-                GroupsResult.Success(listOf(makeGroup(51, u1, u4))),
-                GroupsResult.Success(listOf(makeGroup(52, u2, u99)))
+                GroupsResult.Success(setOf(makeGroup(51, u1, u3))),
+                GroupsResult.Success(setOf(makeGroup(51, u1, u4))),
+                GroupsResult.Success(setOf(makeGroup(52, u2, u99)))
         )
         testObserver.assertNotTerminated()
 
@@ -255,7 +255,7 @@ class GetGroupsTest {
         testObserver.assertValues(
                 // we expect group '51' to be ignored
 
-                GroupsResult.Success(listOf(makeGroup(52, u2)))
+                GroupsResult.Success(setOf(makeGroup(52, u2)))
         )
         testObserver.assertNotTerminated()
 

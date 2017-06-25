@@ -21,7 +21,7 @@ class GetGroupsImpl(
                 activeUserRes
                 .ofType(ActiveUserResult.Success::class.java)
                 .flatMap { repo.getGroupsFor(it.user.id) }
-                .map(GroupsResult::Success)
+                .map { GroupsResult.Success(it.toSet()) }
         val failure: Observable<GroupsResult> =
                 activeUserRes
                 .ofType(NoData::class.java)
