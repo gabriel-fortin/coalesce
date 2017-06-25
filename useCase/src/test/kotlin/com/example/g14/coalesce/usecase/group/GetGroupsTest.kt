@@ -39,7 +39,7 @@ class GetGroupsTest {
     }
 
     fun makeGroup(groupId: IdType, vararg members: User) =
-            Group(groupId, members.asList())
+            Group(groupId, members.toSet())
 
     fun prepareRepoMock() {
         repoMock = mock(Repository::class.java)

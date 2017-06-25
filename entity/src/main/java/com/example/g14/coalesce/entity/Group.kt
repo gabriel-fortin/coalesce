@@ -6,5 +6,5 @@ package com.example.g14.coalesce.entity
 
 data class Group(
         val id: IdType,
-        val members: List<User>
+        val members: Set<User>
 )
