@@ -251,9 +251,54 @@ class GetMessagesImplTest {
         testObs.assertValues(valueAfterReSubscription)
     }
 
+    /** Verifies if <code>repo.getMessages</code>'s observable is being disposed by checking
+     * whether the replay buffer for this observable was dropped. Dropping the buffer occurs
+     * when the observable is disposed.
+     */
     @Test
     fun whenOutputObservableIsDisposed_thenMessagesObservableIsDisposed() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val g: Group = group[1]
+        val rand = Random(333)
+        val messagesBeforeDisposal: List<Message> = genMessages[g.id, 3, rand]
+        val messagesAfterDisposal: List<Message> = genMessages[g.id, 1, rand]
+
+        // PREPARE MOCKS
+        val messagesSubject = PublishSubject.create<List<Message>>()
+        // if all subscribers disconnect then replay values will be dropped
+        val replayableObs = messagesSubject.replay().refCount()
+
+        val activeGroupSub = BehaviorSubject
+                .createDefault<ActiveGroupResult>(ActiveGroupResult.Success(g))
+
+        `when`(_activeGroup.execute())
+                .thenReturn(activeGroupSub)
+        `when`(_repo.getMessages(eq(g.id), anyInt(), isNull()))
+                .thenAnswer { inv ->
+                    val quantity = inv.getArgument<Int>(1)
+                    replayableObs.map { it.take(quantity) }
+                }
+
+        // EXECUTE
+        val sutDisposable = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .subscribe()
+
+        // we expect that 'messagesBeforeDisposal' will not be replayed later
+        messagesSubject.onNext(messagesBeforeDisposal)
+
+        // after this the replay buffer should be lost
+        sutDisposable.dispose()
+
+        // VERIFY
+        // let's observe again; a new replay buffer should be in use
+        val testObs = replayableObs.test()
+
+        // put something in it
+        messagesSubject.onNext(messagesAfterDisposal)
+
+        // check that indeed the buffer was dropped
+        testObs.assertValues(messagesAfterDisposal)
     }
 
     @Test
