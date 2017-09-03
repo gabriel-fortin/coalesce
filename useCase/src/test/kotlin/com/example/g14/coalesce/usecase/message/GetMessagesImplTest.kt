@@ -76,6 +76,90 @@ class GetMessagesImplTest {
     }
 
 
+    @Test
+    fun switchingActiveGroup() {
+//    fun whenGroupExists_whenMessagesForGroupArePresent_thenMessagesAreReturned() {
+        // PREPARE
+        val messagesLimit = 1 //14
+
+        val _repo = mock(Repository::class.java)
+        val _activeGroup = mock(GetActiveGroup::class.java)
+        val sut: GetMessages = GetMessagesImpl(_repo, _activeGroup, null, messagesLimit)
+
+        val activeGroups = listOf(group[1], group[2])
+        val activeGroupsObs: Observable<ActiveGroupResult> =
+                activeGroups
+                .map(ActiveGroupResult::Success)
+                .toObservable<ActiveGroupResult>()
+                        .doOnNext { println("active group - onNext") }
+                        .doOnError { println("active group - onError"); it.printStackTrace() }
+                        .doOnComplete { println("active group - onComplete") }
+
+        `when`(_activeGroup.execute())
+                .thenReturn(activeGroupsObs)
+
+        `when`(_repo.getMessages(eq(group[1].id), /*quantity:*/ anyInt(), /*timeLimit:*/ any<Long>()))
+                .thenAnswer { inv ->
+                    val quantity = inv.getArgument<Int>(1)
+                    val groupId = inv.getArgument<IdType>(0)
+                    val timeLimit = inv.getArgument<Long>(2) ?: Long.MAX_VALUE
+
+                    genMessages[groupId, quantity, randomness]
+                            .filter { it.timestamp < timeLimit }
+                            .let { Observable.just(it) }
+                            as Observable<List<Message>>
+                }
+        `when`(_repo.getMessages(eq(group[2].id), /*quantity:*/ anyInt(), /*timeLimit:*/ any<Long>()))
+                .thenAnswer { inv ->
+                    val quantity = inv.getArgument<Int>(1)
+                    val groupId = inv.getArgument<IdType>(0)
+                    val timeLimit = inv.getArgument<Long>(2) ?: Long.MAX_VALUE
+
+                    genMessages[groupId, quantity, randomness]
+                            .filter { it.timestamp < timeLimit }
+                            .let { Observable.just(it) }
+                            as Observable<List<Message>>
+                }
+        `when`(_repo.getMessages(anyInt(), anyInt(), anyLong()))
+                .thenThrow(RuntimeException("Aaa, we didn't handle this case!"))
+
+        // EXECUTE
+        val actual: Observable<MessagesResult> = sut.execute()
+                .doOnNext { msgsRes ->
+                    val info = if (msgsRes is MessagesResult.Success) "${msgsRes.list.size} shouts"
+                            else "no messages"
+                    println("SUT - onNext - $info")
+                }
+                .doOnComplete { println("SUT - onComplete")}
+                .doOnError { println("SUT - onError - $it"); it.printStackTrace() }
+        val testObs = actual.test()
+
+        // VERIFY
+        val expectedValues: Array<MessagesResult> = activeGroups  // List<Group>
+                .map { g -> genMessages[g.id, messagesLimit, randomness] }  // List<List<Message>>
+                .map { msgs -> MessagesResult.Success(msgs) }   // List<MessagesResult>
+                .toTypedArray()
+        println("EXPECTED VALUES:")
+        expectedValues.forEach { msgRes ->
+            when (msgRes) {
+                is MessagesResult.Success -> {
+                    println("There are ${msgRes.list.size} messages:")
+                    msgRes.list.forEach { msg ->
+                        println("  ${msg.sender.name}  says  ${msg.text}")
+                    }
+                }
+                is MessagesResult.NoMessages -> println("no messages")
+            }
+        }
+//        println(expectedValues)
+        testObs.assertValueCount(expectedValues.size)
+        testObs.assertValues(*expectedValues)
+        testObs.assertNotComplete()
+
+
+//        TODO("finish implementing...")
+    }
+
 
     @Test
     fun justOneGroup_justOneMessagesList() {
@@ -90,8 +174,7 @@ class GetMessagesImplTest {
                 message[17, u1, g],
                 message[24, u2, g],
                 message[35, u1, g],
-                message[36, u2, g]
-        )
+                message[36, u2, g])
         val messagesResult1 = MessagesResult.Success(messages1)
 
         val messagesSubject1 = BehaviorSubject.createDefault<List<Message>>(messages1)
@@ -122,6 +205,85 @@ class GetMessagesImplTest {
 
 
 
+    }
+
+    @Test
+    fun whenOutputObservableIsDisposed_thenActiveGroupObservableIsDisposed() {
+        // TEST DATA
+        val messagesAnswer = arrayOf(
+                emptyList<Message>(),  // not used
+                emptyList<Message>(),
+                genMessages[2, 1, Random(123L)]
+        )
+        val valueBeforeReSubscription = ActiveGroupResult.Success(group[1])
+        val valueAfterReSubscription = ActiveGroupResult.Success(group[2])
+
+        // PREPARE MOCKS
+        val activeGroupSubject = PublishSubject.create<ActiveGroupResult>()
+        // this will not replay values after all subscribers disconnect
+        val replayableObs = activeGroupSubject.replay().refCount()
+
+        `when`(_activeGroup.execute())
+                .thenReturn(replayableObs)
+        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
+                .thenAnswer { inv ->
+                    val groupId = inv.getArgument<IdType>(0) as Int
+                    BehaviorSubject.createDefault(messagesAnswer[groupId])
+                }
+
+        // EXECUTE
+        val sutDisposable = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .subscribe()
+
+        activeGroupSubject.onNext(valueBeforeReSubscription)
+
+        // the only observer of 'replayableObs' sits in sut
+        sutDisposable.dispose()
+        // so its replay buffer should be lost now
+
+        // let's see how much can be replayed
+        val testObs = replayableObs.test()
+        activeGroupSubject.onNext(valueAfterReSubscription)
+
+        // VERIFY
+        // only values emitted after second subscription to 'replayableObs' should be observed
+        testObs.assertValues(valueAfterReSubscription)
+    }
+
+    @Test
+    fun whenOutputObservableIsDisposed_thenMessagesObservableIsDisposed() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenActiveGroupChanges_thenNewResultIsYielded() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenActiveGroupChanges_thenMessagesForPreviousGroupAreNotYielded() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenRepoHasNewMessages_thenNewMessagesAreYielded() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenTimestampProvided_thenRepoIsQueriedWithThisTimestamp() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenQuantityProvided_thenRepoIsQueriedWithThisQuantity() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenQuantityNotProvided_thenRepoIsQueriedWithNonnullPositiveQuantity() {
+        TODO("test not implemented!!!1")
     }
 
     fun anyIdType() = ArgumentMatchers.anyInt()
