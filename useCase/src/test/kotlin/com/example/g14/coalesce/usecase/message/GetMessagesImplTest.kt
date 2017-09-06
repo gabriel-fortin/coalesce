@@ -303,7 +303,46 @@ class GetMessagesImplTest {
 
     @Test
     fun whenActiveGroupChanges_thenNewResultIsYielded() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val r = Random(111)
+        val messages2 = genMessages[2, 5, r]
+        val messages8 = genMessages[8, 6, r]
+        val expectedValues: List<MessagesResult> =
+                arrayOf(messages2, messages8)
+                        .map(MessagesResult::Success)
+
+        // PREPARE MOCKS
+        val groupSubject = BehaviorSubject.create<Group>()
+        val messagesSubject2 = BehaviorSubject.createDefault(messages2)
+                .publish()
+                .autoConnect()
+        val messagesSubject8 = BehaviorSubject.createDefault(messages8)
+                .publish()
+                .autoConnect()
+
+        `when`(_activeGroup.execute())
+                .thenReturn(groupSubject.map(ActiveGroupResult::Success))
+        `when`(_repo.getMessages(anyIdType(), anyInt(), isNull()))
+                .thenAnswer { inv ->
+                    val groupId = inv.getArgument<IdType>(0)
+                    when (groupId) {
+                        2 -> messagesSubject2
+                        8 -> messagesSubject8
+                        else -> throw RuntimeException("unexpected arg when calling _repo.getMessages(…)")
+                    }
+                }
+
+        // EXECUTE
+        val testObs = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .test()
+
+        groupSubject.onNext(group[2])
+        groupSubject.onNext(group[8])
+
+        // VERIFY
+        testObs.assertValueSequence(expectedValues)
+        testObs.assertNotComplete()
     }
 
     @Test
@@ -328,6 +367,11 @@ class GetMessagesImplTest {
 
     @Test
     fun whenQuantityNotProvided_thenRepoIsQueriedWithNonnullPositiveQuantity() {
+        TODO("test not implemented!!!1")
+    }
+
+    @Test
+    fun whenActiveGroupIsNoGroup_thenNoMessagesIsYielded() {
         TODO("test not implemented!!!1")
     }
 
