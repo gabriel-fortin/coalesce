@@ -8,7 +8,7 @@ import com.example.g14.coalesce.usecase.Repository
 import com.example.g14.coalesce.usecase.group.ActiveGroupResult
 import com.example.g14.coalesce.usecase.group.GetActiveGroup
 import io.reactivex.Observable
-import io.reactivex.rxkotlin.toObservable
+import io.reactivex.observers.TestObserver
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.junit.Before
@@ -21,10 +21,6 @@ import java.util.*
  * Created by Gabriel Fortin
  */
 
-/** starting value for "User" ids */
-const val U_BASE: IdType = 100
-/** starting value for "Group" ids */
-const val G_BASE: IdType = 20000
 /** starting value for "timestamp" */
 const val T_BASE: Long = 3000000L
 
@@ -32,10 +28,11 @@ class GetMessagesImplTest {
     /** DATA GENERATORS */
     private val user = object {
         operator fun get(id: IdType) =
-                User(id, "user ${id}", "")
+                User(id, "user $id", "")
     }
     private val group = object {
         operator fun get(id: IdType): Group {
+            @Suppress("USELESS_CAST")
             val users =
                     (1..(id as Int))  // cast IdType to Int (even if unnecessary for current IdType)
                     .map { user[(id as Int)*10 + it] }
@@ -52,6 +49,7 @@ class GetMessagesImplTest {
     }
     private val genMessages = object {
         operator fun get(gId: IdType, quantity: Int, randGen: Random): List<Message> {
+            @Suppress("USELESS_CAST")
             val group = group[gId as Int]
             val randomUserIn = { g: Group ->
                 val randomIndex = randGen.nextInt(g.members.size)
@@ -65,6 +63,7 @@ class GetMessagesImplTest {
     }
     private val randomness = Random(14*14)
 
+    /*************************************************************************/
 
     lateinit var _repo: Repository
     lateinit var _activeGroup: GetActiveGroup
@@ -74,6 +73,57 @@ class GetMessagesImplTest {
         _repo = mock(Repository::class.java)
         _activeGroup = mock(GetActiveGroup::class.java)
     }
+
+    fun setUpActiveGroupObservableMock(vararg data: Group) {
+        setUpActiveGroupObservableMock(data.map(ActiveGroupResult::Success))
+    }
+
+    fun setUpActiveGroupObservableMock(data: List<ActiveGroupResult>) {
+        Observable.fromIterable(data)
+                .doNotComplete()
+                .run { setUpActiveGroupObservableMock(this) }
+    }
+
+    fun setUpActiveGroupObservableMock(observable: Observable<ActiveGroupResult>) {
+        `when`(_activeGroup.execute())
+                .thenReturn(observable)
+    }
+
+    fun setUpMessagesObservableMock(vararg answers: Pair<_MsgsArgs, List<Message>>) {
+        answers
+                .map { (args, messages) ->
+                    val messagesObs = Observable.just(messages)
+                            .doNotComplete()
+                    Pair(args, messagesObs)
+                }
+                .run { setUpMessagesObservableMock(this) }
+    }
+
+    fun setUpMessagesObservableMock(answers: List<Pair<_MsgsArgs, Observable<List<Message>>>>) {
+        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
+                .thenAnswer { inv ->
+                    val actualArgs = _MsgsArgs(
+                            inv.getArgument<IdType>(0),
+                            inv.getArgument<Int>(1),
+                            inv.getArgument<Long?>(2)
+                    )
+                    answers.firstOrNull { (args, _) -> args == actualArgs }
+                            // try to return observable for matched args
+                            ?.second
+                            // otherwise throw an exception
+                            ?: throw RuntimeException("no answer provided for args $actualArgs")
+                }
+    }
+
+    data class _MsgsArgs(
+            val groupId: IdType,
+            val quantity: Int,
+            val timestamp: Long?)
+
+    fun <T> Observable<T>.doNotComplete(): Observable<T> =
+            this.concatWith { PublishSubject.create<T>() }
+
+    /*************************************************************************/
 
 
     @Test
@@ -163,92 +213,79 @@ class GetMessagesImplTest {
 
     @Test
     fun justOneGroup_justOneMessagesList() {
+        // TEST DATA
         val timestamp = Long.MAX_VALUE
         val quantity = 14
         val groupId = 3
 
-        val g = group[groupId]
-        val u1 = g.members.elementAt(0)
-        val u2 = g.members.elementAt(1)
-        val messages1 = listOf(
-                message[17, u1, g],
-                message[24, u2, g],
-                message[35, u1, g],
-                message[36, u2, g])
+        val messages1 = genMessages[groupId, quantity, randomness]
         val messagesResult1 = MessagesResult.Success(messages1)
 
-        val messagesSubject1 = BehaviorSubject.createDefault<List<Message>>(messages1)
-        val activeGroupsSubject = PublishSubject.create<ActiveGroupResult>()
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock(group[groupId])
+        setUpMessagesObservableMock(
+                _MsgsArgs(groupId, quantity, timestamp).to(messages1)
+        )
 
-        `when`(_repo.getMessages(eq(groupId), eq(quantity), eq(timestamp)))
-                .thenReturn(messagesSubject1.hide())
-        `when`(_activeGroup.execute())
-                .thenReturn(activeGroupsSubject.hide())
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup, timestamp, quantity)
+                .execute()
+                .test()
 
-
-
-        val sut: GetMessages = GetMessagesImpl(_repo, _activeGroup, timestamp, quantity)
-
-        val testObserver = sut.execute().test()
-
-        activeGroupsSubject.onNext(ActiveGroupResult.Success(g))
-
-
-
-
-
-
-        val expectedValues: List<MessagesResult> = listOf(messagesResult1)
-
-        testObserver.assertValueSequence(expectedValues)
-        testObserver.assertNotComplete()
-
-
-
+        // VERIFY
+        sutObserver
+                .assertNoErrors()
+                .assertValues(messagesResult1)
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenOutputObservableIsDisposed_thenActiveGroupObservableIsDisposed() {
         // TEST DATA
-        val messagesAnswer = arrayOf(
-                emptyList<Message>(),  // not used
-                emptyList<Message>(),
-                genMessages[2, 1, Random(123L)]
-        )
-        val valueBeforeReSubscription = ActiveGroupResult.Success(group[1])
-        val valueAfterReSubscription = ActiveGroupResult.Success(group[2])
+        val groupBeforeDisposal = ActiveGroupResult.Success(group[12])
+        val groupAfterDisposal = ActiveGroupResult.Success(group[13])
+        val messagesBeforeDisposal = genMessages[12, 5, randomness]
+        val messagesAfterDisposal = genMessages[13, 7, randomness]
+        val messagesResultBeforeDisposal = MessagesResult.Success(messagesBeforeDisposal)
 
         // PREPARE MOCKS
         val activeGroupSubject = PublishSubject.create<ActiveGroupResult>()
         // this will not replay values after all subscribers disconnect
         val replayableObs = activeGroupSubject.replay().refCount()
 
-        `when`(_activeGroup.execute())
-                .thenReturn(replayableObs)
-        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
-                .thenAnswer { inv ->
-                    val groupId = inv.getArgument<IdType>(0) as Int
-                    BehaviorSubject.createDefault(messagesAnswer[groupId])
-                }
+        setUpActiveGroupObservableMock(replayableObs)
+        setUpMessagesObservableMock(
+                _MsgsArgs(12, 10, null).to(messagesBeforeDisposal),
+                _MsgsArgs(13, 10, null).to(messagesAfterDisposal)
+        )
 
         // EXECUTE
-        val sutDisposable = GetMessagesImpl(_repo, _activeGroup)
+        val sutObserver: TestObserver<MessagesResult> =
+                GetMessagesImpl(_repo, _activeGroup)
                 .execute()
-                .subscribe()
+                .test()
 
-        activeGroupSubject.onNext(valueBeforeReSubscription)
+        activeGroupSubject.onNext(groupBeforeDisposal)
 
         // the only observer of 'replayableObs' sits in sut
-        sutDisposable.dispose()
+        sutObserver.dispose()
         // so its replay buffer should be lost now
 
-        // let's see how much can be replayed
-        val testObs = replayableObs.test()
-        activeGroupSubject.onNext(valueAfterReSubscription)
-
         // VERIFY
-        // only values emitted after second subscription to 'replayableObs' should be observed
-        testObs.assertValues(valueAfterReSubscription)
+        // let's see how much can be replayed
+        val replayObserver = replayableObs.test()
+        activeGroupSubject.onNext(groupAfterDisposal)
+
+        // only values emitted BEFORE second subscription to 'replayableObs' should be observed
+        sutObserver
+                .assertNoErrors()  // technically not needed but gives better output
+                .assertValues(messagesResultBeforeDisposal)
+                .assertNotTerminated()
+                .assertSubscribed()
+
+        // only values emitted AFTER second subscription to 'replayableObs' should be observed
+        replayObserver.assertValues(groupAfterDisposal)
     }
 
     /** Verifies if <code>repo.getMessages</code>'s observable is being disposed by checking
@@ -258,44 +295,42 @@ class GetMessagesImplTest {
     @Test
     fun whenOutputObservableIsDisposed_thenMessagesObservableIsDisposed() {
         // TEST DATA
-        val g: Group = group[1]
-        val rand = Random(333)
-        val messagesBeforeDisposal: List<Message> = genMessages[g.id, 3, rand]
-        val messagesAfterDisposal: List<Message> = genMessages[g.id, 1, rand]
+        val groupId = 7
+        val messagesBeforeDisposal: List<Message> = genMessages[groupId, 3, randomness]
+        val messagesAfterDisposal: List<Message> = genMessages[groupId, 1, randomness]
+        val messagesResultBeforeDisposal = MessagesResult.Success(messagesBeforeDisposal)
 
         // PREPARE MOCKS
         val messagesSubject = PublishSubject.create<List<Message>>()
         // if all subscribers disconnect then replay values will be dropped
         val replayableObs = messagesSubject.replay().refCount()
 
-        val activeGroupSub = BehaviorSubject
-                .createDefault<ActiveGroupResult>(ActiveGroupResult.Success(g))
-
-        `when`(_activeGroup.execute())
-                .thenReturn(activeGroupSub)
-        `when`(_repo.getMessages(eq(g.id), anyInt(), isNull()))
-                .thenAnswer { inv ->
-                    val quantity = inv.getArgument<Int>(1)
-                    replayableObs.map { it.take(quantity) }
-                }
+        setUpActiveGroupObservableMock(group[groupId])
+        setUpMessagesObservableMock( listOf(
+                _MsgsArgs(groupId, 10, null).to(replayableObs)
+        ))
 
         // EXECUTE
-        val sutDisposable = GetMessagesImpl(_repo, _activeGroup)
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
                 .execute()
-                .subscribe()
+                .test()
 
         // we expect that 'messagesBeforeDisposal' will not be replayed later
         messagesSubject.onNext(messagesBeforeDisposal)
 
         // after this the replay buffer should be lost
-        sutDisposable.dispose()
+        sutObserver.dispose()
 
         // VERIFY
         // let's observe again; a new replay buffer should be in use
         val testObs = replayableObs.test()
-
-        // put something in it
         messagesSubject.onNext(messagesAfterDisposal)
+
+        sutObserver
+                .assertNoErrors()
+                .assertValues(messagesResultBeforeDisposal)
+                .assertNotTerminated()
+                .assertSubscribed()
 
         // check that indeed the buffer was dropped
         testObs.assertValues(messagesAfterDisposal)
@@ -304,45 +339,38 @@ class GetMessagesImplTest {
     @Test
     fun whenActiveGroupChanges_thenNewResultIsYielded() {
         // TEST DATA
-        val r = Random(111)
-        val messages2 = genMessages[2, 5, r]
-        val messages8 = genMessages[8, 6, r]
-        val expectedValues: List<MessagesResult> =
-                arrayOf(messages2, messages8)
-                        .map(MessagesResult::Success)
+        val groupA = 2
+        val groupB = 8
+        val messagesA = genMessages[groupA, 5, randomness]
+        val messagesB = genMessages[groupB, 6, randomness]
+        val expectedValues = listOf(
+                MessagesResult.Success(messagesA),
+                MessagesResult.Success(messagesB)
+        )
 
         // PREPARE MOCKS
         val groupSubject = BehaviorSubject.create<Group>()
-        val messagesSubject2 = BehaviorSubject.createDefault(messages2)
-                .publish()
-                .autoConnect()
-        val messagesSubject8 = BehaviorSubject.createDefault(messages8)
-                .publish()
-                .autoConnect()
 
-        `when`(_activeGroup.execute())
-                .thenReturn(groupSubject.map(ActiveGroupResult::Success))
-        `when`(_repo.getMessages(anyIdType(), anyInt(), isNull()))
-                .thenAnswer { inv ->
-                    val groupId = inv.getArgument<IdType>(0)
-                    when (groupId) {
-                        2 -> messagesSubject2
-                        8 -> messagesSubject8
-                        else -> throw RuntimeException("unexpected arg when calling _repo.getMessages(…)")
-                    }
-                }
+        setUpActiveGroupObservableMock(groupSubject.map<ActiveGroupResult>(ActiveGroupResult::Success))
+        setUpMessagesObservableMock(
+                _MsgsArgs(groupA, 10, null).to(messagesA),
+                _MsgsArgs(groupB, 10, null).to(messagesB)
+        )
 
         // EXECUTE
-        val testObs = GetMessagesImpl(_repo, _activeGroup)
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
                 .execute()
                 .test()
 
-        groupSubject.onNext(group[2])
-        groupSubject.onNext(group[8])
+        groupSubject.onNext(group[groupA])
+        groupSubject.onNext(group[groupB])
 
         // VERIFY
-        testObs.assertValueSequence(expectedValues)
-        testObs.assertNotComplete()
+        sutObserver
+                .assertNoErrors()
+                .assertValueSequence(expectedValues)
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
