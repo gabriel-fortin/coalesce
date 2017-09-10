@@ -13,7 +13,9 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
+import org.junit.Assert.*
 import org.mockito.Mockito.*
 import java.util.*
 
@@ -290,32 +292,217 @@ class GetMessagesImplTest {
 
     @Test
     fun whenActiveGroupChanges_thenMessagesForPreviousGroupAreNotYielded() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val groupA = 13
+        val groupB = 14
+        val messagesA1 = genMessages[groupA, 2, randomness]
+        val messagesA2 = genMessages[groupA, 2, randomness]
+
+        // PREPARE MOCKS
+        val groupSubject = PublishSubject.create<ActiveGroupResult>()
+        val messagesASubject = PublishSubject.create<List<Message>>()
+        val messagesBSubject = PublishSubject.create<List<Message>>()
+
+        setUpActiveGroupObservableMock(groupSubject)
+        setUpMessagesObservableMock( listOf(
+                _MsgsArgs(groupA, 10, null).to(messagesASubject),
+                _MsgsArgs(groupB, 10, null).to(messagesBSubject)
+        ))
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .test()
+
+        groupSubject.onNext(ActiveGroupResult.Success(group[groupA]))
+        messagesASubject.onNext(messagesA1)
+
+        groupSubject.onNext(ActiveGroupResult.Success(group[groupB]))
+        // those messages should not appear in the output (even more: their observable should be disposed)
+        messagesASubject.onNext(messagesA2)
+
+        // VERIFY
+        sutObserver
+                .assertNoErrors()
+                .assertValues(
+                        MessagesResult.Success(messagesA1)
+                )
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenRepoHasNewMessages_thenNewMessagesAreYielded() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val groupA = 13
+        val messagesA1 = genMessages[groupA, 2, randomness]
+        val messagesA2 = genMessages[groupA, 2, randomness]
+
+        // PREPARE MOCKS
+        val messagesASubject = PublishSubject.create<List<Message>>()
+
+        setUpActiveGroupObservableMock(group[groupA])
+        setUpMessagesObservableMock( listOf(
+                _MsgsArgs(groupA, 10, null).to(messagesASubject)
+        ))
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .test()
+
+        messagesASubject.onNext(messagesA1)
+        messagesASubject.onNext(messagesA2)
+
+        // VERIFY
+        sutObserver
+                .assertNoErrors()
+                .assertValues(
+                        MessagesResult.Success(messagesA1),
+                        MessagesResult.Success(messagesA2)
+                )
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenTimestampProvided_thenRepoIsQueriedWithThisTimestamp() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val groupId = 13
+        val timestamp = 9284L
+        val messages = genMessages[groupId, 2, randomness]
+
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock(group[groupId])
+        // only a call to '_repo.getMessages' with here provided args will not throw
+        setUpMessagesObservableMock(
+                _MsgsArgs(groupId, 10, timestamp).to(messages)
+        )
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup, timestamp = timestamp)
+                .execute()
+                .test()
+
+        // VERIFY
+        // verification is performed by the choice of args passed to 'setUpMessagesObservableMock'
+
+        sutObserver
+                .assertNoErrors()
+                .assertNotTerminated()
+                .assertSubscribed()
+    }
+
+    @Test
+    fun whenTimestampNotProvided_thenRepoIsQueriedWithNullTimestamp() {
+        // TEST DATA
+        val groupId = 13
+        val timestamp = null
+        val messages = genMessages[groupId, 2, randomness]
+
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock(group[groupId])
+        // only a call to '_repo.getMessages' with here provided args will not throw
+        setUpMessagesObservableMock(
+                _MsgsArgs(groupId, 10, timestamp).to(messages)
+        )
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup, timestamp = timestamp)
+                .execute()
+                .test()
+
+        // VERIFY
+        // verification is performed by the choice of args passed to 'setUpMessagesObservableMock'
+
+        sutObserver
+                .assertNoErrors()
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenQuantityProvided_thenRepoIsQueriedWithThisQuantity() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val groupId = 13
+        val quantity = 4
+        val messages = genMessages[groupId, 2, randomness]
+
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock(group[groupId])
+        // only a call to '_repo.getMessages' with here provided args will not throw
+        setUpMessagesObservableMock(
+                _MsgsArgs(groupId, quantity, null).to(messages)
+        )
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup, quantity = quantity)
+                .execute()
+                .test()
+
+        // VERIFY
+        // verification is performed by the choice of args passed to 'setUpMessagesObservableMock'
+
+        sutObserver
+                .assertNoErrors()
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenQuantityNotProvided_thenRepoIsQueriedWithNonnullPositiveQuantity() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val groupId = 13
+        val whatever = BehaviorSubject.createDefault(emptyList<Message>())
+
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock(group[groupId])
+        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
+                .thenReturn(whatever)
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .test()
+
+        // VERIFY
+        val quantityCaptor = ArgumentCaptor.forClass(Int::class.java)
+        verify(_repo).getMessages(eq(groupId), quantityCaptor.capture(), any())
+        assertTrue(quantityCaptor.value > 0)
+
+        sutObserver
+                .assertNoErrors()
+                .assertNotTerminated()
+                .assertSubscribed()
     }
 
     @Test
     fun whenActiveGroupIsNoGroup_thenNoMessagesIsYielded() {
-        TODO("test not implemented!!!1")
+        // TEST DATA
+        val whatever = BehaviorSubject.createDefault(emptyList<Message>())
+
+        // PREPARE MOCKS
+        setUpActiveGroupObservableMock( listOf(
+                ActiveGroupResult.NoGroup()
+        ))
+        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
+                .thenReturn(whatever)
+
+        // EXECUTE
+        val sutObserver = GetMessagesImpl(_repo, _activeGroup)
+                .execute()
+                .test()
+
+        // VERIFY
+        sutObserver
+                .assertNoErrors()
+                .assertValues(
+                        MessagesResult.NoMessages(ActiveGroupResult.NoGroup())
+                )
+                .assertNotTerminated()
+                .assertSubscribed()
+        verifyNoMoreInteractions(_repo)
+
     }
 
     fun anyIdType() = ArgumentMatchers.anyInt()
