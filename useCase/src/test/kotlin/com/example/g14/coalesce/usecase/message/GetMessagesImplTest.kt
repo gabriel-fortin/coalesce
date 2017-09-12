@@ -1,20 +1,16 @@
 package com.example.g14.coalesce.usecase.message
 
 import com.example.g14.coalesce.entity.Group
-import com.example.g14.coalesce.entity.IdType
 import com.example.g14.coalesce.entity.Message
-import com.example.g14.coalesce.entity.User
 import com.example.g14.coalesce.usecase.Repository
 import com.example.g14.coalesce.usecase.group.ActiveGroupResult
 import com.example.g14.coalesce.usecase.group.GetActiveGroup
-import io.reactivex.Observable
 import io.reactivex.observers.TestObserver
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers
 import org.junit.Assert.*
 import org.mockito.Mockito.*
 import java.util.*
@@ -28,102 +24,23 @@ const val T_BASE: Long = 3000000L
 
 class GetMessagesImplTest {
     /** DATA GENERATORS */
-    private val user = object {
-        operator fun get(id: IdType) =
-                User(id, "user $id", "")
-    }
-    private val group = object {
-        operator fun get(id: IdType): Group {
-            @Suppress("USELESS_CAST")
-            val users =
-                    (1..(id as Int))  // cast IdType to Int (even if unnecessary for current IdType)
-                    .map { user[(id as Int)*10 + it] }
-                    .toSet()
-            return Group(id, users)
-            // what user ids would be yielded in a resulting group
-            //      2 -> {21, 22}
-            //      3 -> {31, 32, 33}
-        }
-    }
-    private val message = object {
-        operator fun get(id: IdType, u: User, g: Group) =
-                Message(id, "message $id", T_BASE+id, u, g)
-    }
-    private val genMessages = object {
-        operator fun get(gId: IdType, quantity: Int, randGen: Random): List<Message> {
-            @Suppress("USELESS_CAST")
-            val group = group[gId as Int]
-            val randomUserIn = { g: Group ->
-                val randomIndex = randGen.nextInt(g.members.size)
-                g.members.asIterable().elementAt(randomIndex)
-            }
-
-            return (1..quantity)
-                    .map { i -> message[i, randomUserIn(group), group] }
-                    .toList()
-        }
-    }
-    private val randomness = Random(14*14)
+    private val group: GroupProvider = TestData.group
+    private val genMessages: MessagesGenerator = TestData.messageGenerator
 
     /*************************************************************************/
 
-    lateinit var _repo: Repository
-    lateinit var _activeGroup: GetActiveGroup
+    private lateinit var _repo: Repository
+    private lateinit var _activeGroup: GetActiveGroup
+    private lateinit var randomness: Random
 
     @Before
     fun setUp() {
         _repo = mock(Repository::class.java)
         _activeGroup = mock(GetActiveGroup::class.java)
+        randomness = Random(14*14)
     }
 
-    fun setUpActiveGroupObservableMock(vararg data: Group) {
-        setUpActiveGroupObservableMock(data.map(ActiveGroupResult::Success))
-    }
 
-    fun setUpActiveGroupObservableMock(data: List<ActiveGroupResult>) {
-        Observable.fromIterable(data)
-                .doNotComplete()
-                .run { setUpActiveGroupObservableMock(this) }
-    }
-
-    fun setUpActiveGroupObservableMock(observable: Observable<ActiveGroupResult>) {
-        `when`(_activeGroup.execute())
-                .thenReturn(observable)
-    }
-
-    fun setUpMessagesObservableMock(vararg answers: Pair<_MsgsArgs, List<Message>>) {
-        answers
-                .map { (args, messages) ->
-                    val messagesObs = Observable.just(messages)
-                            .doNotComplete()
-                    Pair(args, messagesObs)
-                }
-                .run { setUpMessagesObservableMock(this) }
-    }
-
-    fun setUpMessagesObservableMock(answers: List<Pair<_MsgsArgs, Observable<List<Message>>>>) {
-        `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
-                .thenAnswer { inv ->
-                    val actualArgs = _MsgsArgs(
-                            inv.getArgument<IdType>(0),
-                            inv.getArgument<Int>(1),
-                            inv.getArgument<Long?>(2)
-                    )
-                    answers.firstOrNull { (args, _) -> args == actualArgs }
-                            // try to return observable for matched args
-                            ?.second
-                            // otherwise throw an exception
-                            ?: throw RuntimeException("no answer provided for args $actualArgs")
-                }
-    }
-
-    data class _MsgsArgs(
-            val groupId: IdType,
-            val quantity: Int,
-            val timestamp: Long?)
-
-    fun <T> Observable<T>.doNotComplete(): Observable<T> =
-            this.concatWith { PublishSubject.create<T>() }
 
     /*************************************************************************/
 
@@ -139,8 +56,8 @@ class GetMessagesImplTest {
         val messagesResult1 = MessagesResult.Success(messages1)
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock(group[groupId])
-        setUpMessagesObservableMock(
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(groupId, quantity, timestamp).to(messages1)
         )
 
@@ -171,8 +88,8 @@ class GetMessagesImplTest {
         // this will not replay values after all subscribers disconnect
         val replayableObs = activeGroupSubject.replay().refCount()
 
-        setUpActiveGroupObservableMock(replayableObs)
-        setUpMessagesObservableMock(
+        setUpActiveGroupObservableMock(_activeGroup, replayableObs)
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(12, 10, null).to(messagesBeforeDisposal),
                 _MsgsArgs(13, 10, null).to(messagesAfterDisposal)
         )
@@ -222,8 +139,8 @@ class GetMessagesImplTest {
         // if all subscribers disconnect then replay values will be dropped
         val replayableObs = messagesSubject.replay().refCount()
 
-        setUpActiveGroupObservableMock(group[groupId])
-        setUpMessagesObservableMock( listOf(
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
+        setUpMessagesObservableMock(_repo, listOf(
                 _MsgsArgs(groupId, 10, null).to(replayableObs)
         ))
 
@@ -268,8 +185,8 @@ class GetMessagesImplTest {
         // PREPARE MOCKS
         val groupSubject = BehaviorSubject.create<Group>()
 
-        setUpActiveGroupObservableMock(groupSubject.map<ActiveGroupResult>(ActiveGroupResult::Success))
-        setUpMessagesObservableMock(
+        setUpActiveGroupObservableMock(_activeGroup, groupSubject.map<ActiveGroupResult>(ActiveGroupResult::Success))
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(groupA, 10, null).to(messagesA),
                 _MsgsArgs(groupB, 10, null).to(messagesB)
         )
@@ -303,8 +220,8 @@ class GetMessagesImplTest {
         val messagesASubject = PublishSubject.create<List<Message>>()
         val messagesBSubject = PublishSubject.create<List<Message>>()
 
-        setUpActiveGroupObservableMock(groupSubject)
-        setUpMessagesObservableMock( listOf(
+        setUpActiveGroupObservableMock(_activeGroup, groupSubject)
+        setUpMessagesObservableMock(_repo, listOf(
                 _MsgsArgs(groupA, 10, null).to(messagesASubject),
                 _MsgsArgs(groupB, 10, null).to(messagesBSubject)
         ))
@@ -341,8 +258,8 @@ class GetMessagesImplTest {
         // PREPARE MOCKS
         val messagesASubject = PublishSubject.create<List<Message>>()
 
-        setUpActiveGroupObservableMock(group[groupA])
-        setUpMessagesObservableMock( listOf(
+        setUpActiveGroupObservableMock(_activeGroup, group[groupA])
+        setUpMessagesObservableMock(_repo, listOf(
                 _MsgsArgs(groupA, 10, null).to(messagesASubject)
         ))
 
@@ -373,9 +290,9 @@ class GetMessagesImplTest {
         val messages = genMessages[groupId, 2, randomness]
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock(group[groupId])
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
         // only a call to '_repo.getMessages' with here provided args will not throw
-        setUpMessagesObservableMock(
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(groupId, 10, timestamp).to(messages)
         )
 
@@ -401,9 +318,9 @@ class GetMessagesImplTest {
         val messages = genMessages[groupId, 2, randomness]
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock(group[groupId])
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
         // only a call to '_repo.getMessages' with here provided args will not throw
-        setUpMessagesObservableMock(
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(groupId, 10, timestamp).to(messages)
         )
 
@@ -429,9 +346,9 @@ class GetMessagesImplTest {
         val messages = genMessages[groupId, 2, randomness]
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock(group[groupId])
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
         // only a call to '_repo.getMessages' with here provided args will not throw
-        setUpMessagesObservableMock(
+        setUpMessagesObservableMock(_repo,
                 _MsgsArgs(groupId, quantity, null).to(messages)
         )
 
@@ -456,7 +373,7 @@ class GetMessagesImplTest {
         val whatever = BehaviorSubject.createDefault(emptyList<Message>())
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock(group[groupId])
+        setUpActiveGroupObservableMock(_activeGroup, group[groupId])
         `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
                 .thenReturn(whatever)
 
@@ -482,7 +399,7 @@ class GetMessagesImplTest {
         val whatever = BehaviorSubject.createDefault(emptyList<Message>())
 
         // PREPARE MOCKS
-        setUpActiveGroupObservableMock( listOf(
+        setUpActiveGroupObservableMock(_activeGroup,  listOf(
                 ActiveGroupResult.NoGroup()
         ))
         `when`(_repo.getMessages(anyIdType(), anyInt(), any()))
@@ -505,6 +422,5 @@ class GetMessagesImplTest {
 
     }
 
-    fun anyIdType() = ArgumentMatchers.anyInt()
 
 }
