@@ -41,7 +41,7 @@ class GetMessagesImpl(
         val successGroups: Observable<MessagesResult> =
                 activeGroup
                 .ofType(ActiveGroupResult.Success::class.java)
-                .flatMap { repo.getMessages(it.group.id, quantity, before = timestamp) }
+                .switchMap { repo.getMessages(it.group.id, quantity, before = timestamp) }
                 .map(MessagesResult::Success)
         val failGroups: Observable<MessagesResult> =
                 activeGroup
