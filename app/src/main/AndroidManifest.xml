@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ScratchActivity"
+            android:name=".scratch.ScratchActivity"
             android:exported="true"
             >
         </activity>
