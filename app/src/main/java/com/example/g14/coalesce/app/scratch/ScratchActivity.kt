@@ -5,8 +5,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Bundle
-import android.support.v4.graphics.ColorUtils
-import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -27,7 +25,7 @@ class ScratchActivity : AppCompatActivity() {
                 .apply { orientation = LinearLayoutManager.VERTICAL }
 
         shoppingRecycler.addItemDecoration(BambooItemDecor())
-        ItemTouchHelper(BambooCallback()).attachToRecyclerView(shoppingRecycler)
+//        ItemTouchHelper(BambooCallback()).attachToRecyclerView(shoppingRecycler)
     }
 
 

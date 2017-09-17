@@ -1,92 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<com.example.g14.coalesce.app.scratch.InterceptingFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#cc66cccc"
-    tools:ignore="RtlHardcoded"
+    android:id="@+id/itemContent"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="#ff0000"
+    >
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="userProvider"
-        tools:text="kapusta"
-        app:layout_constraintEnd_toStartOf="@+id/buyingStateBox"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintStart_toEndOf="@+id/priorityFrame"
-        android:layout_marginStart="8dp"/>
+        android:orientation="horizontal"
+        android:background="#cc66cccc"
+        >
 
-    <CheckBox
-        android:id="@+id/buyingStateBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        <ImageButton
+            android:id="@+id/moveToSortButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            />
 
-    <!--<View-->
-        <!--android:id="@+id/frameLayout"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="0dp"-->
-        <!--android:layout_marginBottom="8dp"-->
-        <!--android:layout_marginLeft="8dp"-->
-        <!--android:layout_marginTop="8dp"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent"-->
-        <!--app:layout_constraintDimensionRatio="1:1"-->
-        <!--&gt;-->
+        <ImageButton
+            android:id="@+id/removeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_delete"
+            />
 
-    <!--</View>-->
+    </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/priorityFrame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
+    <android.support.constraint.ConstraintLayout
+        tools:ignore="RtlHardcoded"
+        android:id="@+id/itemData"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#eedddddd"
         >
 
         <TextView
-            android:id="@+id/priorityText"
+            android:id="@+id/titleText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="userProvider"
+            tools:text="kapusta"
+            app:layout_constraintEnd_toStartOf="@+id/buyingStateBox"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintStart_toEndOf="@+id/_priorityFrame"
+            android:layout_marginStart="8dp"/>
+
+        <CheckBox
+            android:id="@+id/buyingStateBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            tools:text="7"
-            />
+            android:layout_marginRight="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/_priorityFrame"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            >
 
-    <!--<TextView-->
-        <!--android:id="@+id/priorityText"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_marginBottom="8dp"-->
-        <!--android:layout_marginEnd="8dp"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:layout_marginTop="8dp"-->
-        <!--android:text="userProvider"-->
-        <!--android:textAlignment="center"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintEnd_toStartOf="@+id/itemTitle"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent"-->
-        <!--tools:text="7"-->
-        <!--/>-->
+            <TextView
+                android:id="@+id/priorityText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                tools:text="7"
+                />
 
-</android.support.constraint.ConstraintLayout>
+        </FrameLayout>
+
+    </android.support.constraint.ConstraintLayout>
+</com.example.g14.coalesce.app.scratch.InterceptingFrameLayout>
