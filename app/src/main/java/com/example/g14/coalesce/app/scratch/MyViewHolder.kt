@@ -7,20 +7,20 @@ import android.widget.TextView
 import com.example.g14.coalesce.app.R
 
 class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    private val prioText = view.findViewById(R.id.priorityText) as TextView
-    private val titleText = view.findViewById(R.id.titleText) as TextView
-    private val checkbox = view.findViewById(R.id.buyingStateBox) as CheckBox
+    private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
+    private val titleTextTV = view.findViewById(R.id.titleText) as TextView
+    private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox
 
-    fun setPriorityText(text: String) {
-        prioText.text = text
-    }
+    var priorityText: String
+        set(value) { prioTextTV.text = value }
+        get() = prioTextTV.text.toString()
 
-    fun setTitleText(text: String) {
-        titleText.text = text
-    }
+    var titleText: String
+        set(value) { titleTextTV.text = value }
+        get() = titleTextTV.text.toString()
 
     var checkBox: Boolean = false
         set(value) {
-            checkbox.isChecked = value
+            checkBoxCB.isChecked = value
         }
 }

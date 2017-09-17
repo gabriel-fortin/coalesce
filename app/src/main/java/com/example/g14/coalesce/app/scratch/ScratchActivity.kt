@@ -1,8 +1,12 @@
 package com.example.g14.coalesce.app.scratch
 
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Bundle
+import android.support.v4.graphics.ColorUtils
+import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -21,9 +25,11 @@ class ScratchActivity : AppCompatActivity() {
         shoppingRecycler.adapter = BambooAdapter(SAMPLE_DATA, this)
         shoppingRecycler.layoutManager = LinearLayoutManager(this)
                 .apply { orientation = LinearLayoutManager.VERTICAL }
-//        shoppingRecycler.addItemDecoration()
-        BambooTouchHelper(BambooCallback()).attachToRecyclerView(shoppingRecycler)
+
+        shoppingRecycler.addItemDecoration(BambooItemDecor())
+        ItemTouchHelper(BambooCallback()).attachToRecyclerView(shoppingRecycler)
     }
+
 
     class BambooCallback : ItemTouchHelper.Callback() {
         override fun getMovementFlags(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
@@ -39,34 +45,55 @@ class ScratchActivity : AppCompatActivity() {
         }
     }
 
-    class BambooTouchHelper(callback: ItemTouchHelper.Callback) : ItemTouchHelper(callback) {
-    }
 
-    class BambooItemDecor : RecyclerView.ItemDecoration() {
-        override fun onDrawOver(c: Canvas?, parent: RecyclerView?, state: RecyclerView.State?) {
-            super.onDrawOver(c, parent, state)
+    inner class BambooItemDecor : RecyclerView.ItemDecoration() {
+        val paint = Paint().apply {
+            color = Color.MAGENTA
         }
 
-        override fun onDrawOver(c: Canvas?, parent: RecyclerView?) {
-            super.onDrawOver(c, parent)
+        override fun onDrawOver(c: Canvas, parent: RecyclerView?, state: RecyclerView.State?) {
+        }
+
+        override fun getItemOffsets(outRect: Rect, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
+            outRect.top = 13
+            outRect.bottom = 25
+            outRect.left = 130
+            outRect.right = 30
         }
 
         override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
-            super.onDraw(c, parent, state)
-        }
+            Log.i("AAA", "decoration ON DRAW")
+            c.save()
+//            c.drawARGB(150, 0, 0, 0)
 
-        override fun onDraw(c: Canvas?, parent: RecyclerView?) {
-            super.onDraw(c, parent)
-        }
+            val childCount = parent.childCount
+            Log.i("AAA", "child count: $childCount")
 
-        override fun getItemOffsets(outRect: Rect?, itemPosition: Int, parent: RecyclerView?) {
-            super.getItemOffsets(outRect, itemPosition, parent)
-        }
+            for (i in 0..childCount-1) {
+                Log.d("AAA", "child $i")
+                val child = parent.getChildAt(i)
+                val prioTxt = (parent.findContainingViewHolder(child) as BambooViewHolder?)
+                        ?.priorityText
+                        ?: "NO VIEW HOLDER"
+                Log.d("AAA", "priority text: $prioTxt")
 
-        override fun getItemOffsets(outRect: Rect?, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
-            super.getItemOffsets(outRect, view, parent, state)
+                if (prioTxt == "1") continue
+
+                val bounds = Rect()
+                        .apply { parent.getDecoratedBoundsWithMargins(child, this) }
+                val left = 10
+                val top = bounds.top + 1
+                val right = left + 200
+                val bottom = bounds.bottom - 1
+
+                val rect = Rect(left, top, right, bottom)
+                c.drawRect(rect, paint)
+            }
+
+            c.restore()
         }
     }
+
 
     data class DataItem(val title: String, val prio: Int, val bought: Boolean)
 

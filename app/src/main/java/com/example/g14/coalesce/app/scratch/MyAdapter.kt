@@ -18,8 +18,8 @@ class BambooAdapter(val data: List<ScratchActivity.DataItem>, context: Context) 
     override fun onBindViewHolder(holder: BambooViewHolder, position: Int) {
         val item = data[position]
         with(holder) {
-            setPriorityText(item.prio.toString())
-            setTitleText(item.title)
+            priorityText = item.prio.toString()
+            titleText = item.title
             checkBox = item.bought
         }
     }
