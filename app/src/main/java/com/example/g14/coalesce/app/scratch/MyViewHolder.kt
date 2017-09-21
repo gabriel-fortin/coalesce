@@ -12,7 +12,7 @@ class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
     private val titleTextTV = view.findViewById(R.id.titleText) as TextView
     private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox
-    private val itemData = view.findViewById(R.id.itemData) as ViewGroup
+    val itemData = view.findViewById(R.id.itemData) as ViewGroup
 
 
     init {

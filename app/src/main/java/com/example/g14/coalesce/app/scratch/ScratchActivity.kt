@@ -25,22 +25,80 @@ class ScratchActivity : AppCompatActivity() {
                 .apply { orientation = LinearLayoutManager.VERTICAL }
 
         shoppingRecycler.addItemDecoration(BambooItemDecor())
-//        ItemTouchHelper(BambooCallback()).attachToRecyclerView(shoppingRecycler)
+        ItemTouchHelper(BambooCallback(shoppingRecycler)).attachToRecyclerView(shoppingRecycler)
     }
 
 
-    class BambooCallback : ItemTouchHelper.Callback() {
+    class BambooCallback(val recView: RecyclerView) : ItemTouchHelper.Callback() {
+        val swipeBarrier = 200f  // TODO: set 'swipeBarrier' value intelligently
+        var userStartsSwiping = false
+        var initialDx = 0f
+        var initialObservedX = 0f
+        var swipeThreshold: Float = 0.1f  // beginning value, never used
+
         override fun getMovementFlags(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
             return makeMovementFlags(0, ItemTouchHelper.RIGHT)
         }
 
+        // TODO: remove 'onMove' callback
         override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
             TODO("not implemented: ${javaClass.simpleName}.onMove")
         }
 
+        // TODO: remove 'onSwiped' callback
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            Log.i("AAA", "SWIPE")
+            Log.i("AAA", "SWIPED")
         }
+
+        override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder?): Float {
+            Log.d("HHH", "get swipe threshold:  $swipeThreshold")
+            return swipeThreshold
+        }
+
+        override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+//            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            if (actionState != ItemTouchHelper.ACTION_STATE_SWIPE) return
+
+            if (userStartsSwiping) {
+                userStartsSwiping = false
+                initialDx = dX
+                if (dX == 0f) {
+                    initialObservedX = 0f
+                    swipeThreshold = 0.5f * swipeBarrier / recView.width
+//                    swipeThreshold = 0.1f
+                } else {
+                    initialObservedX = 200f
+                    swipeThreshold = 1 - 0.5f * swipeBarrier / recView.width
+//                    swipeThreshold = 0.9f
+                }
+            }
+
+            val ourDx = initialObservedX + (dX - initialDx)
+            val effectiveTranslation = Math.max(0f, Math.min(200f, ourDx))
+
+            (viewHolder as BambooViewHolder).itemData.translationX = effectiveTranslation
+            Log.v("HHH", "dX:  ${dX.toInt()}   $isCurrentlyActive   initDx:  $initialDx" +
+                    "   ourDx:  $ourDx   eff tran X:  $effectiveTranslation")
+        }
+
+        override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+            super.onSelectedChanged(viewHolder, actionState)
+            val state = when (actionState) {
+                ItemTouchHelper.ACTION_STATE_SWIPE -> {
+                    userStartsSwiping = true
+//                    swipeThreshold = 0.9f
+                    "swipe"
+                }
+                ItemTouchHelper.ACTION_STATE_DRAG -> "drag"
+                ItemTouchHelper.ACTION_STATE_IDLE -> {
+//                    swipeThreshold = 0.1f
+                    "idle"
+                }
+                else -> "???"
+            }
+            Log.i("HHH", "on-selected-change   $state")
+        }
+
     }
 
 
@@ -55,8 +113,8 @@ class ScratchActivity : AppCompatActivity() {
         override fun getItemOffsets(outRect: Rect, view: View?, parent: RecyclerView?, state: RecyclerView.State?) {
             outRect.top = 13
             outRect.bottom = 25
-            outRect.left = 130
-            outRect.right = 30
+//            outRect.left = 130
+//            outRect.right = 30
         }
 
         override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {

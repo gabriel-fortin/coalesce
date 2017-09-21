@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.g14.coalesce.app.scratch.InterceptingFrameLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -90,4 +90,4 @@
         </FrameLayout>
 
     </android.support.constraint.ConstraintLayout>
-</com.example.g14.coalesce.app.scratch.InterceptingFrameLayout>
+</FrameLayout>
