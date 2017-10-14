@@ -8,10 +8,11 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.g14.coalesce.app.R
 
-class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view), ScratchActivity.SwipeItemForOptions.ItemHelper {
     private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
     private val titleTextTV = view.findViewById(R.id.titleText) as TextView
     private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox
+    private val buttonsEnding = view.findViewById(R.id.buttonsEnding) as View
     val itemData = view.findViewById(R.id.itemData) as ViewGroup
 
 
@@ -37,4 +38,8 @@ class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         set(value) {
             checkBoxCB.isChecked = value
         }
+
+    override fun getViewToSwipe(): ViewGroup = itemData
+
+    override fun getMaxSwipeDistance(): Float = buttonsEnding.left.toFloat()
 }

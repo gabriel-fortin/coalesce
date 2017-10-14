@@ -11,8 +11,11 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
 import kotlinx.android.synthetic.main.activity_scratch.*
+
+val tag = ScratchActivity::class.java.simpleName
 
 class ScratchActivity : AppCompatActivity() {
 
@@ -25,75 +28,83 @@ class ScratchActivity : AppCompatActivity() {
                 .apply { orientation = LinearLayoutManager.VERTICAL }
 
         shoppingRecycler.addItemDecoration(BambooItemDecor())
-        ItemTouchHelper(BambooCallback(shoppingRecycler)).attachToRecyclerView(shoppingRecycler)
+        ItemTouchHelper(SwipeItemForOptions()).attachToRecyclerView(shoppingRecycler)
     }
 
 
-    class BambooCallback(val recView: RecyclerView) : ItemTouchHelper.Callback() {
-        val swipeBarrier = 200f  // TODO: set 'swipeBarrier' value intelligently
+    class SwipeItemForOptions: ItemTouchHelper.Callback() {
+
+        /**
+         * Interface to be implemented by the view holder
+         */
+        interface ItemHelper {
+            fun getViewToSwipe(): ViewGroup
+            fun getMaxSwipeDistance(): Float
+        }
+
+        val desiredSwipeThreshold = .5f
+        lateinit var recView: RecyclerView
         var userStartsSwiping = false
         var initialDx = 0f
         var initialObservedX = 0f
-        var swipeThreshold: Float = 0.1f  // beginning value, never used
+        var swipeThreshold = 0.1f  // beginning value; never used
 
-        override fun getMovementFlags(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
+        override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder?): Int {
+            recView = recyclerView
             return makeMovementFlags(0, ItemTouchHelper.RIGHT)
         }
 
-        // TODO: remove 'onMove' callback
         override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
-            TODO("not implemented: ${javaClass.simpleName}.onMove")
+            throw RuntimeException("not implemented")
         }
 
-        // TODO: remove 'onSwiped' callback
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            Log.i("AAA", "SWIPED")
+            Log.i(tag, "swiped")
         }
 
         override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder?): Float {
-            Log.d("HHH", "get swipe threshold:  $swipeThreshold")
+            Log.d(tag, "get swipe threshold  ->  $swipeThreshold")
             return swipeThreshold
         }
 
-        override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-//            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                                 dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
             if (actionState != ItemTouchHelper.ACTION_STATE_SWIPE) return
+
+            if (viewHolder !is ItemHelper) {
+                Log.w(tag, "view holder doesn't implement required interface")
+                return
+            }
 
             if (userStartsSwiping) {
                 userStartsSwiping = false
                 initialDx = dX
+                swipeThreshold = desiredSwipeThreshold * viewHolder.getMaxSwipeDistance() / recView.width
                 if (dX == 0f) {
                     initialObservedX = 0f
-                    swipeThreshold = 0.5f * swipeBarrier / recView.width
-//                    swipeThreshold = 0.1f
                 } else {
-                    initialObservedX = 200f
-                    swipeThreshold = 1 - 0.5f * swipeBarrier / recView.width
-//                    swipeThreshold = 0.9f
+                    initialObservedX = viewHolder.getMaxSwipeDistance()
+                    swipeThreshold = 1 - swipeThreshold
                 }
             }
 
             val ourDx = initialObservedX + (dX - initialDx)
-            val effectiveTranslation = Math.max(0f, Math.min(200f, ourDx))
+            val ourDxLimited = Math.max(0f, Math.min(viewHolder.getMaxSwipeDistance(), ourDx))
 
-            (viewHolder as BambooViewHolder).itemData.translationX = effectiveTranslation
+            viewHolder.getViewToSwipe().translationX = ourDxLimited
             Log.v("HHH", "dX:  ${dX.toInt()}   $isCurrentlyActive   initDx:  $initialDx" +
-                    "   ourDx:  $ourDx   eff tran X:  $effectiveTranslation")
+                    "   ourDx:  $ourDx   eff tran X:  $ourDxLimited")
         }
 
         override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
             super.onSelectedChanged(viewHolder, actionState)
+            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                userStartsSwiping = true
+            }
             val state = when (actionState) {
-                ItemTouchHelper.ACTION_STATE_SWIPE -> {
-                    userStartsSwiping = true
-//                    swipeThreshold = 0.9f
-                    "swipe"
-                }
+                ItemTouchHelper.ACTION_STATE_SWIPE -> "swipe"
                 ItemTouchHelper.ACTION_STATE_DRAG -> "drag"
-                ItemTouchHelper.ACTION_STATE_IDLE -> {
-//                    swipeThreshold = 0.1f
-                    "idle"
-                }
+                ItemTouchHelper.ACTION_STATE_IDLE -> "idle"
                 else -> "???"
             }
             Log.i("HHH", "on-selected-change   $state")

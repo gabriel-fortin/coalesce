@@ -30,6 +30,12 @@
             android:src="@android:drawable/ic_menu_delete"
             />
 
+        <View
+            android:id="@+id/buttonsEnding"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            />
+
     </LinearLayout>
 
     <android.support.constraint.ConstraintLayout
