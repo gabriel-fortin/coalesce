@@ -1,21 +1,22 @@
-package com.example.g14.coalesce.app.scratch
+package com.example.g14.coalesce.app.shoppinglist
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
+import com.example.g14.coalesce.app.scratch.ScratchActivity
 
-class BambooAdapter(val data: List<ScratchActivity.DataItem>, context: Context) : RecyclerView.Adapter<BambooViewHolder>() {
+class ShopItemAdapter(val data: List<ScratchActivity.DataItem>, context: Context) : RecyclerView.Adapter<ShopItemViewHolder>() {
 
     val inflater: LayoutInflater = LayoutInflater.from(context)
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): BambooViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ShopItemViewHolder {
         val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
-        return BambooViewHolder(view)
+        return ShopItemViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: BambooViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
         val item = data[position]
         with(holder) {
             priorityText = item.prio.toString()

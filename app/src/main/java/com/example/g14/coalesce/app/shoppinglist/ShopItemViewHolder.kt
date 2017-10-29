@@ -1,4 +1,4 @@
-package com.example.g14.coalesce.app.scratch
+package com.example.g14.coalesce.app.shoppinglist
 
 import android.support.v7.widget.RecyclerView
 import android.view.View
@@ -8,7 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.g14.coalesce.app.R
 
-class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view), ScratchActivity.SwipeItemForOptions.ItemHelper {
+class ShopItemViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItemForOptions.ItemHelper {
     private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
     private val titleTextTV = view.findViewById(R.id.titleText) as TextView
     private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox
@@ -35,9 +35,11 @@ class BambooViewHolder(view: View) : RecyclerView.ViewHolder(view), ScratchActiv
         get() = titleTextTV.text.toString()
 
     var checkBox: Boolean = false
+//    var checkBox: Boolean
         set(value) {
             checkBoxCB.isChecked = value
         }
+//        get() = checkBoxCB.isChecked
 
     override fun getViewToSwipe(): ViewGroup = itemData
 
