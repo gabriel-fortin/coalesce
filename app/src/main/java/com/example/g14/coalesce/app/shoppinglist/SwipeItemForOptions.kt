@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.ViewGroup
 import com.example.g14.coalesce.app.scratch.tag
 
-val tag = SwipeItemForOptions::class.java.simpleName
+val tag: String = SwipeItemForOptions::class.java.simpleName
 
 /**
  * To use this class your view holder must implement SwipeItemForOptions.ItemHelper
@@ -23,12 +23,12 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
     }
 
 
-    private val desiredSwipeThreshold = .5f
+    private val swipeThresholdRatio = .5f
     private lateinit var recView: RecyclerView
     private var userStartsSwiping = false
     private var initialDx = 0f
     private var initialObservedX = 0f
-    private var swipeThreshold = 0.1f  // beginning value; never used
+    private var swipeThresholdValue = 0.1f  // beginning value; never used
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder?): Int {
         recView = recyclerView
@@ -44,8 +44,8 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
     }
 
     override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder?): Float {
-        Log.d(tag, "get swipe threshold  ->  $swipeThreshold")
-        return swipeThreshold
+        Log.d(tag, "get swipe threshold  ->  $swipeThresholdValue")
+        return swipeThresholdValue
     }
 
     override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
@@ -60,12 +60,12 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
         if (userStartsSwiping) {
             userStartsSwiping = false
             initialDx = dX
-            swipeThreshold = desiredSwipeThreshold * viewHolder.getMaxSwipeDistance() / recView.width
+            swipeThresholdValue = swipeThresholdRatio * viewHolder.getMaxSwipeDistance() / recView.width
             if (dX == 0f) {
                 initialObservedX = 0f
             } else {
                 initialObservedX = viewHolder.getMaxSwipeDistance()
-                swipeThreshold = 1 - swipeThreshold
+                swipeThresholdValue = 1 - swipeThresholdValue
             }
         }
 

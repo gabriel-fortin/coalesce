@@ -17,7 +17,7 @@ import com.example.g14.coalesce.app.shoppinglist.ShopItemViewHolder
 import com.example.g14.coalesce.app.shoppinglist.SwipeItemForOptions
 import kotlinx.android.synthetic.main.activity_scratch.*
 
-val tag = ScratchActivity::class.java.simpleName
+val tag: String = ScratchActivity::class.java.simpleName
 
 class ScratchActivity : AppCompatActivity() {
 
