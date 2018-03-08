@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
 import com.example.g14.coalesce.app.scratch.ScratchActivity
 
-class ShopItemAdapter(val data: List<ScratchActivity.DataItem>, context: Context) : RecyclerView.Adapter<ShopItemViewHolder>() {
+class ShopItemAdapter(/*val data: List<ScratchActivity.ShoppingListItem>,*/ context: Context) : RecyclerView.Adapter<ShopItemViewHolder>() {
 
     val inflater: LayoutInflater = LayoutInflater.from(context)
+
+    var data: List<ScratchActivity.ShoppingListItem> = listOf()
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ShopItemViewHolder {
         val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
