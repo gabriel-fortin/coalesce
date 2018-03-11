@@ -1,4 +1,4 @@
-package com.example.g14.coalesce.app.shoppinglist
+package com.example.g14.coalesce.app.shoppinglist.internal
 
 data class ShoppingsItem(
         val title: String,

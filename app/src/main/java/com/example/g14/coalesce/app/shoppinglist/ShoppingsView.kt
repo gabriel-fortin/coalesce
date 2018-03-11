@@ -5,6 +5,10 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.AttributeSet
+import com.example.g14.coalesce.app.shoppinglist.internal.BambooItemDecor
+import com.example.g14.coalesce.app.shoppinglist.internal.ShoppingsAdapter
+import com.example.g14.coalesce.app.shoppinglist.internal.ShoppingsItem
+import com.example.g14.coalesce.app.shoppinglist.internal.SwipeItemForOptions
 
 /**
  * Created by Gabriel Fortin

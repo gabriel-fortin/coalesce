@@ -1,4 +1,4 @@
-package com.example.g14.coalesce.app.shoppinglist
+package com.example.g14.coalesce.app.shoppinglist.internal
 
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
