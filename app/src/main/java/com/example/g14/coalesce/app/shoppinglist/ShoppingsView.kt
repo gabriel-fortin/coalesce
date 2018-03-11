@@ -5,7 +5,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.AttributeSet
-import com.example.g14.coalesce.app.scratch.ShoppingListItem
 
 /**
  * Created by Gabriel Fortin
@@ -15,14 +14,14 @@ class ShoppingsView(context: Context, attrs: AttributeSet?, defStyle: Int) : Rec
     constructor(context: Context) : this(context, null)
 
     init {
-        adapter = ShopItemAdapter(context)
+        adapter = ShoppingsAdapter(context)
         layoutManager = LinearLayoutManager(this.context)
                 .apply { orientation = LinearLayoutManager.VERTICAL }
         addItemDecoration(BambooItemDecor())
         ItemTouchHelper(SwipeItemForOptions()).attachToRecyclerView(this)
     }
 
-    fun setData(data: List<ShoppingListItem>){
-        (adapter as ShopItemAdapter).data = data
+    fun setData(data: List<ShoppingsItem>){
+        (adapter as ShoppingsAdapter).data = data
     }
 }

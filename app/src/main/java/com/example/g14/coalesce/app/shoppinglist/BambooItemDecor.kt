@@ -60,7 +60,7 @@ class BambooItemDecor : RecyclerView.ItemDecoration() {
 //            for (i in 0..childCount-1) {
 //                Log.d("AAA", "child $i")
 //                val child = parent.getChildAt(i)
-//                val prioTxt = (parent.findContainingViewHolder(child) as ShopItemViewHolder?)
+//                val prioTxt = (parent.findContainingViewHolder(child) as ShoppingsViewHolder?)
 //                        ?.priorityText
 //                        ?: "NO VIEW HOLDER"
 //                Log.d("AAA", "priority text: $prioTxt")

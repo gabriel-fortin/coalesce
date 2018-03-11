@@ -8,7 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.g14.coalesce.app.R
 
-class ShopItemViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItemForOptions.ItemHelper {
+class ShoppingsViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItemForOptions.ItemHelper {
     private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
     private val titleTextTV = view.findViewById(R.id.titleText) as TextView
     private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox

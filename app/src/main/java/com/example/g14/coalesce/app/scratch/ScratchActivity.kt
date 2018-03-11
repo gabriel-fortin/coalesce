@@ -3,6 +3,7 @@ package com.example.g14.coalesce.app.scratch
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.example.g14.coalesce.app.R
+import com.example.g14.coalesce.app.shoppinglist.ShoppingsItem
 import kotlinx.android.synthetic.main.activity_scratch.*
 
 
@@ -19,17 +20,17 @@ class ScratchActivity : AppCompatActivity() {
     }
 
 
-    val SAMPLE_DATA: List<ShoppingListItem> = listOf(
-            ShoppingListItem("papryka", 1, false),
-            ShoppingListItem("ogórek", 1, false),
-            ShoppingListItem("twaróg", 2, false),
-            ShoppingListItem("cheddar", 1, true),
-            ShoppingListItem("seler naciowy", 1, true),
-            ShoppingListItem("single cream", 2, false),
-            ShoppingListItem("mięso mielone", 1, true),
-            ShoppingListItem("kalafior", 1, false),
-            ShoppingListItem("brokuł", 3, false),
-            ShoppingListItem("masło orzechowe", 1, false)
+    val SAMPLE_DATA: List<ShoppingsItem> = listOf(
+            ShoppingsItem("papryka", 1, false),
+            ShoppingsItem("ogórek", 1, false),
+            ShoppingsItem("twaróg", 2, false),
+            ShoppingsItem("cheddar", 1, true),
+            ShoppingsItem("seler naciowy", 1, true),
+            ShoppingsItem("single cream", 2, false),
+            ShoppingsItem("mięso mielone", 1, true),
+            ShoppingsItem("kalafior", 1, false),
+            ShoppingsItem("brokuł", 3, false),
+            ShoppingsItem("masło orzechowe", 1, false)
     )
 
 }
