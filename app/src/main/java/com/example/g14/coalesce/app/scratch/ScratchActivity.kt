@@ -5,9 +5,11 @@ import android.support.v7.app.AppCompatActivity
 import com.example.g14.coalesce.app.R
 import kotlinx.android.synthetic.main.activity_scratch.*
 
-val tag: String = ScratchActivity::class.java.simpleName
 
 class ScratchActivity : AppCompatActivity() {
+    companion object {
+        val tag: String = ScratchActivity::class.java.simpleName
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

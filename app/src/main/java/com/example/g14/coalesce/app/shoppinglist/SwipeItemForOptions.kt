@@ -5,14 +5,14 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.ViewGroup
-import com.example.g14.coalesce.app.scratch.tag
-
-val tag: String = SwipeItemForOptions::class.java.simpleName
 
 /**
  * To use this class your view holder must implement SwipeItemForOptions.ItemHelper
  */
 class SwipeItemForOptions : ItemTouchHelper.Callback() {
+    companion object {
+        val tag: String = SwipeItemForOptions::class.java.simpleName
+    }
 
     /**
      * Interface to be implemented by the view holder

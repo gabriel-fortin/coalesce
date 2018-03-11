@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
 import com.example.g14.coalesce.app.scratch.ShoppingListItem
 
-class ShopItemAdapter(/*val data: List<ScratchActivity.ShoppingListItem>,*/ context: Context) : RecyclerView.Adapter<ShopItemViewHolder>() {
+class ShopItemAdapter(context: Context) : RecyclerView.Adapter<ShopItemViewHolder>() {
 
     val inflater: LayoutInflater = LayoutInflater.from(context)
 
