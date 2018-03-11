@@ -29,8 +29,6 @@ class ScratchActivity : AppCompatActivity() {
     }
 
 
-    data class ShoppingListItem(val title: String, val prio: Int, val bought: Boolean)
-
     val SAMPLE_DATA: List<ShoppingListItem> = listOf(
             ShoppingListItem("papryka", 1, false),
             ShoppingListItem("ogórek", 1, false),

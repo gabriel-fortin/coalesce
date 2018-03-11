@@ -5,8 +5,8 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.AttributeSet
-import com.example.g14.coalesce.app.scratch.ScratchActivity
 import kotlinx.android.synthetic.main.activity_scratch.view.*
+import com.example.g14.coalesce.app.scratch.ShoppingListItem
 
 /**
  * Created by Gabriel Fortin
