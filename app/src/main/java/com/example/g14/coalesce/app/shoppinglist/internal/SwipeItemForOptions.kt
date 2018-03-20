@@ -22,10 +22,12 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
         fun getMaxSwipeDistance(): Float
     }
 
+    var dummyCounter: Byte = 0
+
 
     private val swipeThresholdRatio = .5f
     private lateinit var recView: RecyclerView
-    private var userStartsSwiping = false
+    private var userStartsSwiping = -1
     private var initialDx = 0f
     private var initialObservedX = 0f
     private var swipeThresholdValue = 0.1f  // beginning value; never used
@@ -48,6 +50,8 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
         return swipeThresholdValue
     }
 
+//    override fun isItemViewSwipeEnabled(): Boolean = true
+
     override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
                              dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
         if (actionState != ItemTouchHelper.ACTION_STATE_SWIPE) return
@@ -57,8 +61,8 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
             return
         }
 
-        if (userStartsSwiping) {
-            userStartsSwiping = false
+        if (userStartsSwiping == 0) {
+            userStartsSwiping++
             initialDx = dX
             swipeThresholdValue = swipeThresholdRatio * viewHolder.getMaxSwipeDistance() / recView.width
             if (dX == 0f) {
@@ -67,20 +71,30 @@ class SwipeItemForOptions : ItemTouchHelper.Callback() {
                 initialObservedX = viewHolder.getMaxSwipeDistance()
                 swipeThresholdValue = 1 - swipeThresholdValue
             }
+        } else if (userStartsSwiping == 1) {
+            userStartsSwiping++
+            if (!isCurrentlyActive) {
+                // TODO: should ignore input from now on until 'onSwiped' is called
+            }
         }
 
         val ourDx = initialObservedX + (dX - initialDx)
         val ourDxLimited = Math.max(0f, Math.min(viewHolder.getMaxSwipeDistance(), ourDx))
 
         viewHolder.getViewToSwipe().translationX = ourDxLimited
-        Log.v(tag, "dX:  ${dX.toInt()}   $isCurrentlyActive   initDx:  $initialDx" +
-                "   ourDx:  $ourDx   eff tran X:  $ourDxLimited")
+        Log.v(tag, "[${dummyCounter++}]  dX:${"%4d".format(dX.toInt())}   " +
+                "act: ${if (isCurrentlyActive) "y" else "n"}   initDx:  $initialDx" +
+                "   ourDx:  ${"%.1f".format(ourDx)}   tran X:  $ourDxLimited")
+    }
+
+    override fun onChildDrawOver(c: Canvas?, recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+        super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
     }
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-            userStartsSwiping = true
+            userStartsSwiping = 0
         }
         val state = when (actionState) {
             ItemTouchHelper.ACTION_STATE_SWIPE -> "swipe"

@@ -13,14 +13,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="#cc66cccc"
+        android:background="#a7a7a7"
         >
 
         <ImageButton
             android:id="@+id/reorderButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:background="@android:color/transparent"
             android:src="@android:drawable/ic_menu_sort_by_size"
+            android:contentDescription="@string/move_item_contentDesc"
             />
 
         <ImageButton
@@ -28,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="@string/remove_item_contentDesc"
             />
 
         <View
@@ -43,14 +49,14 @@
         android:id="@+id/itemData"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#eedddddd"
+        android:background="#dddddd"
+        android:translationX="00dp"
         >
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="userProvider"
             tools:text="kapusta"
             app:layout_constraintEnd_toStartOf="@+id/buyingStateBox"
             android:layout_marginEnd="8dp"

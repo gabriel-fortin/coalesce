@@ -2,4 +2,6 @@
     <string name="app_name">Coalesce</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="move_item_contentDesc">move item</string>
+    <string name="remove_item_contentDesc">remove item</string>
 </resources>
