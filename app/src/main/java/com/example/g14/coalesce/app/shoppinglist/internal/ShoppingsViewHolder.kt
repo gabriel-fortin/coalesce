@@ -17,10 +17,10 @@ class ShoppingsViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItem
 
 
     init {
-        view.findViewById(R.id.moveToSortButton).setOnClickListener {
+        view.findViewById<View>(R.id.reorderButton).setOnClickListener {
             Toast.makeText(view.context, "sort CLICK", Toast.LENGTH_SHORT).show()
         }
-        view.findViewById(R.id.removeButton).setOnClickListener {
+        view.findViewById<View>(R.id.removeButton).setOnClickListener {
             Toast.makeText(view.context, "remove CLICK", Toast.LENGTH_SHORT).show()
         }
     }

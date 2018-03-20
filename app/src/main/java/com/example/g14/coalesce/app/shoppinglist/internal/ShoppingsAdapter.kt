@@ -12,7 +12,7 @@ class ShoppingsAdapter(context: Context) : RecyclerView.Adapter<ShoppingsViewHol
 
     var data: List<ShoppingsItem> = listOf()
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ShoppingsViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoppingsViewHolder {
         val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
         return ShoppingsViewHolder(view)
     }

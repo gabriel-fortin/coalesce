@@ -17,7 +17,7 @@
         >
 
         <ImageButton
-            android:id="@+id/moveToSortButton"
+            android:id="@+id/reorderButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_sort_by_size"
