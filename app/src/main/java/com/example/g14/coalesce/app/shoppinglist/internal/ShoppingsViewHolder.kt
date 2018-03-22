@@ -1,6 +1,7 @@
 package com.example.g14.coalesce.app.shoppinglist.internal
 
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -9,6 +10,10 @@ import android.widget.Toast
 import com.example.g14.coalesce.app.R
 
 class ShoppingsViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItemForOptions.ItemHelper {
+    companion object {
+        val tag: String = ShoppingsViewHolder::class.java.simpleName
+    }
+
     private val prioTextTV = view.findViewById(R.id.priorityText) as TextView
     private val titleTextTV = view.findViewById(R.id.titleText) as TextView
     private val checkBoxCB = view.findViewById(R.id.buyingStateBox) as CheckBox
@@ -18,10 +23,14 @@ class ShoppingsViewHolder(view: View) : RecyclerView.ViewHolder(view), SwipeItem
 
     init {
         view.findViewById<View>(R.id.reorderButton).setOnClickListener {
-            Toast.makeText(view.context, "sort CLICK", Toast.LENGTH_SHORT).show()
+            val msg = "sort CLICK"
+            Log.d(tag, msg)
+            Toast.makeText(view.context, msg, Toast.LENGTH_SHORT).show()
         }
         view.findViewById<View>(R.id.removeButton).setOnClickListener {
-            Toast.makeText(view.context, "remove CLICK", Toast.LENGTH_SHORT).show()
+            val msg = "remove CLICK"
+            Log.d(tag, msg)
+            Toast.makeText(view.context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
