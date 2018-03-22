@@ -12,7 +12,7 @@ import android.view.MotionEvent
  */
 open class WipGestureListener : GestureDetector.SimpleOnGestureListener() {
     companion object {
-        val tag: String = WipGestureListener::class.java.simpleName
+        val tag: String = WipGestureListener::class.java.simpleName + " ~~"
     }
 
     override fun onSingleTapUp(e: MotionEvent?): Boolean {
