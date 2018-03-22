@@ -6,6 +6,7 @@ import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
+import com.example.g14.coalesce.app.shoppinglist.WipGestureListener
 
 class ShoppingsAdapter(context: Context) : RecyclerView.Adapter<ShoppingsViewHolder>() {
 
@@ -13,15 +14,13 @@ class ShoppingsAdapter(context: Context) : RecyclerView.Adapter<ShoppingsViewHol
 
     var data: List<ShoppingsItem> = listOf()
 
-    val gestureListener: GestureDetector.OnGestureListener = object : GestureDetector.SimpleOnGestureListener() {
-
-    }
+    val gestureListener: GestureDetector.OnGestureListener = WipGestureListener()
 
     val gestureDetector: GestureDetector = GestureDetector(context, gestureListener)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoppingsViewHolder {
         val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
-        view.setOnTouchListener { _, e -> gestureDetector.onTouchEvent(e) }
+//        view.setOnTouchListener { _, e -> gestureDetector.onTouchEvent(e) }
         return ShoppingsViewHolder(view)
     }
 

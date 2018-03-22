@@ -17,6 +17,9 @@ class ScratchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_scratch)
 
         shoppingsComponent.setData(SAMPLE_DATA)
+
+        val gestureDetector = GestureDetector(this, WipGestureListener())
+        shoppingsComponent.setOnTouchListener { v, e -> gestureDetector.onTouchEvent(e) }
     }
 
 
@@ -30,7 +33,9 @@ class ScratchActivity : AppCompatActivity() {
             ShoppingsItem("mięso mielone", 1, true),
             ShoppingsItem("kalafior", 1, false),
             ShoppingsItem("brokuł", 3, false),
-            ShoppingsItem("masło orzechowe", 1, false)
+            ShoppingsItem("masło orzechowe", 1, false),
+            ShoppingsItem("kocie futro", 1, false),
+            ShoppingsItem("łosoś", 1, false)
     )
 
 }
