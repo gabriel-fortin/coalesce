@@ -6,16 +6,26 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
 
-class ShoppingsAdapter(context: Context) : RecyclerView.Adapter<ShoppingsViewHolder>() {
+typealias Interceptor = (ShoppingsViewHolder) -> Unit
 
-    val inflater: LayoutInflater = LayoutInflater.from(context)
+class ShoppingsAdapter(val context: Context) : RecyclerView.Adapter<ShoppingsViewHolder>() {
+    companion object {
+        val tag: String = ShoppingsAdapter::class.java.simpleName
+    }
 
     var data: List<ShoppingsItem> = listOf()
 
+    private val creationInterceptors = mutableListOf<Interceptor>()
+
+    fun addCreationInterceptor(onCreateViewHolderInterceptor: Interceptor): Boolean
+            = creationInterceptors.add(onCreateViewHolderInterceptor)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoppingsViewHolder {
-        val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
-//        view.setOnTouchListener { _, e -> gestureDetector.onTouchEvent(e) }
-        return ShoppingsViewHolder(view)
+        val view = LayoutInflater.from(context)
+                .inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
+        val viewHolder = ShoppingsViewHolder(view)
+        creationInterceptors.forEach { interceptor -> interceptor(viewHolder) }
+        return viewHolder
     }
 
     override fun onBindViewHolder(holder: ShoppingsViewHolder, position: Int) {
