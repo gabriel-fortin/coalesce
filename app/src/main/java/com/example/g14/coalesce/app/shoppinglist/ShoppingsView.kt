@@ -11,9 +11,16 @@ import com.example.g14.coalesce.app.shoppinglist.internal.ShoppingsItem
 /**
  * Created by Gabriel Fortin
  */
-class ShoppingsView(context: Context, attrs: AttributeSet?, defStyle: Int) : RecyclerView(context, attrs, defStyle) {
+class ShoppingsView
+    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : RecyclerView(context, attrs, defStyle) {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context) : this(context, null)
+
+    var adapter: ShoppingsAdapter
+        get() = (super.getAdapter()
+                ?: throw NullPointerException("somebody set the adapter by casting to super-class")
+                ) as ShoppingsAdapter
+        set(value) = super.setAdapter(value)
 
     init {
         adapter = ShoppingsAdapter(context)
@@ -23,6 +30,7 @@ class ShoppingsView(context: Context, attrs: AttributeSet?, defStyle: Int) : Rec
     }
 
     fun setData(data: List<ShoppingsItem>){
-        (adapter as ShoppingsAdapter).data = data
+        adapter.data = data
     }
+
 }
