@@ -2,21 +2,15 @@ package com.example.g14.coalesce.app.shoppinglist.internal
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
-import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.g14.coalesce.app.R
-import com.example.g14.coalesce.app.shoppinglist.WipGestureListener
 
 class ShoppingsAdapter(context: Context) : RecyclerView.Adapter<ShoppingsViewHolder>() {
 
     val inflater: LayoutInflater = LayoutInflater.from(context)
 
     var data: List<ShoppingsItem> = listOf()
-
-    val gestureListener: GestureDetector.OnGestureListener = WipGestureListener()
-
-    val gestureDetector: GestureDetector = GestureDetector(context, gestureListener)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoppingsViewHolder {
         val view = inflater.inflate(R.layout.recycleritem_shopping_constraintlayout, parent, false)
