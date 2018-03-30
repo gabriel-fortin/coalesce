@@ -34,11 +34,6 @@ class ShoppingsViewHolder(view: View)
     val deleteUnderbutton = view.findViewById(R.id.removeButton) as ImageButton
 
     init {
-        reorderUnderbutton.setOnClickListener {
-            val msg = "sort CLICK"
-            Log.d(tag, msg)
-            Toast.makeText(view.context, msg, Toast.LENGTH_SHORT).show()
-        }
         // TODO: delete toast when real implementation is in place
         deleteUnderbutton.setOnClickListener {
             val msg = "remove CLICK"
