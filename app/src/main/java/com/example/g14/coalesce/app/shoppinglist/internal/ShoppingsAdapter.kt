@@ -31,6 +31,7 @@ class ShoppingsAdapter(val context: Context) : RecyclerView.Adapter<ShoppingsVie
     override fun onBindViewHolder(holder: ShoppingsViewHolder, position: Int) {
         val item = data[position]
         with(holder) {
+            reset()
             priorityText = item.prio.toString()
             titleText = item.title
             checkBox = item.bought
