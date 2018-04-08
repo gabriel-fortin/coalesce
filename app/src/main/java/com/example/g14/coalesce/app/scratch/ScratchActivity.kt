@@ -33,6 +33,11 @@ class ScratchActivity : AppCompatActivity() {
             ShoppingsItem("brokuł", 3, false),
             ShoppingsItem("masło orzechowe", 1, false),
             ShoppingsItem("kocie futro", 1, false),
+            ShoppingsItem("awokado", 1, false),
+            ShoppingsItem("nanybanany", 1, false),
+            ShoppingsItem("chlebek z Noa", 2, false),
+            ShoppingsItem("makaron", 1, false),
+            ShoppingsItem("ziemniaki", 1, false),
             ShoppingsItem("łosoś", 1, false)
     )
 
